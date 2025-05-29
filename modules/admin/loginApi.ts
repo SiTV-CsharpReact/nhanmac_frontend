@@ -7,6 +7,11 @@ interface LoginPayload {
   username: string;
   password: string;
 }
+interface ChangePasswordPayload {
+  username: string;
+  oldPassword: string;
+  newPassword: string;
+}
 
 /**
  * Gửi yêu cầu đăng nhập
@@ -34,6 +39,30 @@ export async function login(
     return responseData;
   } catch (error: any) {
     console.error("Lỗi khi gọi API đăng nhập:", error);
+    throw new Error(error.message || "Lỗi không xác định");
+  }
+}
+export async function changePassword(
+  data: ChangePasswordPayload
+): Promise<ApiResponse<any>> {
+  try {
+    const res = await fetch(`${env.apiUrl}/users/change-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    const responseData = await res.json();
+
+    if (!res.ok) {
+      throw new Error(responseData.message || "Đổi mật khẩu thất bại");
+    }
+
+    return responseData;
+  } catch (error: any) {
+    console.error("Lỗi khi gọi API đổi mật khẩu:", error);
     throw new Error(error.message || "Lỗi không xác định");
   }
 }

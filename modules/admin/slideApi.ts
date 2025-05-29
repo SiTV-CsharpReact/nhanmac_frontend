@@ -15,15 +15,15 @@ import { env } from "@/config/env";
 // }
 
 // Lấy danh sách bài viết
-export const fetchPost = async (): Promise<ApiResponse<ListPost[]>> => {
+export const fetchPost = async (): Promise<ApiResponse<Post[]>> => {
   try {
     const response = await fetch(`${env.apiUrl}/slides`);
-    const data: ApiResponse<ListPost[]> = await response.json();
-    
+    const data: ApiResponse<Post[]> = await response.json();
+    console.log(response)
     if (data.Code !== 200) {
        data.Data = [];
       // Bạn có thể log lỗi hoặc xử lý thông báo ở đây nếu muốn
-      console.warn('API trả về lỗi:', data.Message || 'Có lỗi xảy ra');
+      console.warn('API trả về lỗi:', data?.Message || 'Có lỗi xảy ra');
      
     }
     
@@ -110,7 +110,7 @@ export const fetchContentShortId = async (id: number): Promise<ApiResponse<Post>
 //     if (data.Code !== 200) {
 //        data.Data = [];
       // Bạn có thể log lỗi hoặc xử lý thông báo ở đây nếu muốn
-      console.warn('API trả về lỗi:', data.Message || 'Có lỗi xảy ra');
+      // console.warn('API trả về lỗi:', data.Message || 'Có lỗi xảy ra');
      
 //     }
     

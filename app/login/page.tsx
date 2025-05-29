@@ -17,8 +17,10 @@ const [loading, setLoading] = useState(false); // loading state
     try {
       setLoading(true)
       const data = await login(values); // ✅ Dùng hàm login
+      data?.Code!==200 &&   message.error(`${data?.Message}`);
       message.success("Đăng nhập thành công!");
       Cookies.set('access_token', data.Data.usertype, { expires: 1 });
+      Cookies.set('username', values.username, { expires: 1 });
       // cookies.setItem("access_token", data.Data.usertype);
       router.push('/dashboard/menu');
     } catch (error: any) {
