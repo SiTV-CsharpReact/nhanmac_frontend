@@ -201,11 +201,18 @@ export default async function Page(props: {
                           /href="(?:index\.php\/)?[^"]*\/(\d+)-([a-zA-Z0-9\-]+)(?:\.html)?"/g,
                           (match, id, slug) => `href="${slug}-${id}.html"`
                         )
-
                         .replace(
                           /src="(upload\/image\/[^"]+)"/g,
                           (match, src) => `src="https://nhanmac.vn/${src}"`
-                        ),
+                        ).replace(
+                          /(<img[^>]*?)\swidth="[^"]*"/g,
+                          (match, startTag) => `${startTag} width="100%"`
+                        )
+                        .replace(
+                          /<img((?![^>]*width=)[^>]*)>/g,
+                          (match, inside) => `<img${inside} width="100%">`
+                        )
+                        ,
                     }}
                   />
                 </Suspense>
