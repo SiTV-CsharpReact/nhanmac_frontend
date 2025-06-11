@@ -21,9 +21,9 @@ import type { UploadFile } from "antd/es/upload/interface";
 import { UploadOutlined } from "@ant-design/icons";
 import PublishInfoForm from "./PublishInfoForm";
 import { Post } from "@/types/contentItem";
-import { getBase64, removeVietnameseTones } from "@/utils/util";
-import { env } from "@/config/env";
-import { createContent, updateContent } from "@/modules/admin/contentApi";
+import { getBase64, removeVietnameseTones } from "../../../../../utils/util";
+import { env } from "../../../../../config/env";
+import { createContent, updateContent } from "../../../../../modules/admin/contentApi";
 import dayjs from "dayjs";
 
 const { TextArea } = Input;

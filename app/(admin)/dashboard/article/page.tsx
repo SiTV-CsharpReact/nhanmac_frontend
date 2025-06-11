@@ -2,13 +2,13 @@
 import React, { useEffect, useState } from "react";
 import { Table, Button, Tag, Tooltip, Form, Modal, notification, Space, Popconfirm,Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { dateFormat, statusXB } from "@/config/config";
-import { formatMoney, getConstantLabel, getTagColor } from "@/utils/util";
+import { dateFormat, statusXB } from "../../../../config/config";
+import { formatMoney, getConstantLabel, getTagColor } from "../../../../utils/util";
 import dayjs from 'dayjs';
-import { FileSearchOutlined, PlusCircleOutlined } from "@ant-design/icons";
+// import { FileSearchOutlined, PlusCircleOutlined } from "ant-design/icons";
 import { DeleteIcon, EditIcon } from "@/components/icons/Icons";
 import SearchComponent from "./components/SearchComponent";
-import { deleteContent, fetchContent, fetchContentId } from "@/modules/admin/contentApi";
+import { deleteContent, fetchContent, fetchContentId } from "../../../../modules/admin/contentApi";
 import { Post } from "@/types/contentItem";
 import CustomModal from "@/components/share/CustomModal";
 import ContentArticle from "./components/ContentArticle";
@@ -16,7 +16,8 @@ import ViewArticle from "./components/ViewArticle";
 import TitlePageAdmin from "@/components/share/TitlePageAdmin";
 import type { TablePaginationConfig } from "antd/es/table";
 
-import { env } from "@/config/env";
+import { env } from "../../../../config/env";
+import { FileSearchOutlined } from "@ant-design/icons/lib/icons";
 interface TableParams {
   pagination?: TablePaginationConfig;
   sortField?: string;

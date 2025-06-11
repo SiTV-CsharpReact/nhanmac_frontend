@@ -1,4 +1,4 @@
-import { env } from "@/config/env";
+import { env } from "../../config/env";
 import { ApiResponse } from "@/types/apiResponse";
 import { Post } from "@/types/contentItem";
 import type { MenuItem } from "@/types/MenuItem";

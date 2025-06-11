@@ -1,7 +1,7 @@
 import { ApiResponse } from "@/types/apiResponse";
 import { Category } from "@/types/categoryItem";
 import { Post } from "@/types/contentItem";
-import { env } from "@/config/env";
+import { env } from "../../config/env";
 // import { Post } from "@/types/contentItem";
 
 // categoryApi.ts

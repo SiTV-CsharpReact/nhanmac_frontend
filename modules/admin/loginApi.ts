@@ -1,7 +1,7 @@
 // api/authApi.ts
 
 import type { ApiResponse } from "@/types/apiResponse";
-import { env } from "@/config/env";
+import { env } from "../../config/env";
 
 interface LoginPayload {
   username: string;

@@ -1,6 +1,6 @@
 import { Post } from "@/types/contentItem";
 import { ApiResponse } from "@/types/apiResponse";
-import { env } from "@/config/env";
+import { env } from "../../config/env";
 
 // Lấy danh sách bài viết mới nhất
 export async function fetchNewTopPosts(): Promise<ApiResponse<Post[]>> {

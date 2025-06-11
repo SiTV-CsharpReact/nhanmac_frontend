@@ -2,7 +2,7 @@
 import React, { useEffect, useRef } from "react";
 import { Form, DatePicker, Select, Collapse } from "antd";
 import { CalendarOutlined } from "@ant-design/icons";
-import { useSectionWithCategories } from "@/hooks/useParentCate";
+import { useSectionWithCategories } from "../../../../../hooks/useParentCate";
 import dayjs from "dayjs";
 
 const { Panel } = Collapse;

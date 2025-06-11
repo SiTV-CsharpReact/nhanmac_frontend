@@ -1,6 +1,6 @@
 import type { MenuItem } from "@/types/MenuItem";
 import { ApiResponse } from "@/types/apiResponse";
-import { env } from "@/config/env";
+import { env } from "../../config/env";
 
 // Lấy danh sách menu
 export async function fetchMenus(): Promise<ApiResponse<MenuItem[]>> {

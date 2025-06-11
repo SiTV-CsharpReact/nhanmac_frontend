@@ -1,8 +1,8 @@
 import Image from "next/image";
 import { Button } from "antd";
 // import { redirect } from "next/navigation";
-import Header from "@/components/share/Header";
-import Footer from "@/components/share/Footer";
+import Header from "../components/share/Header";
+import Footer from "../components/share/Footer";
 import "./globals.css";
 import Link from "next/link";
 export const metadata = {

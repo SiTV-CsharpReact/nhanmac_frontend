@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import "antd/dist/reset.css"; // Nếu dùng Ant Design v5+
 import "../globals.css";
-import ScrollToTop from "@/components/share/ScrollToTop";
-import HeaderAdmin from "@/components/share/HeaderAdmin";
-import Navbar from "@/components/share/Navbar";
-import StyledComponentsRegistry from "@/lib/AntdRegistry";
+import ScrollToTop from "../../components/share/ScrollToTop";
+import HeaderAdmin from "../../components/share/HeaderAdmin";
+import Navbar from "../../components/share/Navbar";
+import StyledComponentsRegistry from "../../lib/AntdRegistry";
 
 export const metadata: Metadata = {
   title: "Trang quản trị Admin",

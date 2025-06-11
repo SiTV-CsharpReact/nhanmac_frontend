@@ -1,4 +1,4 @@
-import { env } from '@/config/env';
+import { env } from '../../config/env';
 import { Editor } from '@tinymce/tinymce-react';
 // import { env } from '../../../configs/Config';
 // import axios from 'axios';

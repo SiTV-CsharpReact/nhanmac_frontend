@@ -1,7 +1,7 @@
 import { ApiResponse } from "@/types/apiResponse";
 import { ListPost, Post } from "@/types/contentItem";
 import { notification } from "antd";
-import { env } from "@/config/env";
+import { env } from "../../config/env";
 
 interface FetchContentParams {
   page?: number;

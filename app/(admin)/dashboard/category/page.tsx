@@ -9,7 +9,7 @@ import { DeleteIcon, EditIcon } from "@/components/icons/Icons";
 import { useCategories } from "@/hooks/useCategories";
 const { Option } = Select;
 
-import { removeVietnameseTones } from "@/utils/util";
+import { removeVietnameseTones } from "../../../../utils/util";
 // console.log(React.version);
 // Hàm chuyển mảng phẳng thành tree
 
