@@ -17,7 +17,7 @@ import TitlePageAdmin from "@/components/share/TitlePageAdmin";
 import type { TablePaginationConfig } from "antd/es/table";
 
 import { env } from "../../../../config/env";
-import { FileSearchOutlined } from "@ant-design/icons/lib/icons";
+import { FileSearchOutlined, PlusCircleOutlined } from "@ant-design/icons/lib/icons";
 interface TableParams {
   pagination?: TablePaginationConfig;
   sortField?: string;

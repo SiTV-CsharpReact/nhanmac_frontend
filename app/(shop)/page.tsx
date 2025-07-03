@@ -58,9 +58,6 @@ export const metadata :Metadata= {
     site: "@nhanmac", // nếu có
     creator: "@nhanmac", // nếu có
   },
-  verification: {
-    google: "T0fsyz7y2VTfHfmaNwV3rjMXPhLOSNXfY93pMqnD5NQ",
-  },
   icons: {
     icon: "https://nhanmac.vn/templates/nhanmac/favicon.ico",
     apple: [

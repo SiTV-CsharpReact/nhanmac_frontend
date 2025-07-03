@@ -6,7 +6,7 @@ html, body {
 
 
 body {
-  font-family: 'Roboto Condensed', sans-serif;
+  /* font-family: 'Roboto Condensed', sans-serif; */
   margin: 0;
 }
 :root {
@@ -17,7 +17,7 @@ body {
   font-family: Roboto, sans-serif !important;
 }
 
-@font-face {
+/* @font-face {
   font-family: 'Roboto Condensed';
   src: url('/fonts/roboto/Roboto_Condensed-Thin.ttf') format('truetype');
   font-weight: 100;
@@ -127,7 +127,7 @@ body {
   src: url('/fonts/roboto/Roboto_Condensed-BlackItalic.ttf') format('truetype');
   font-weight: 900;
   font-style: italic;
-}
+} */
 
 .ant-carousel .slick-dots li::after {
   background: #2F80ED;

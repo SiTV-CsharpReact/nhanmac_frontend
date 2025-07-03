@@ -12,17 +12,17 @@ type Category = {
 };
 type Props = {
     categoryKey: string;
-    bgWhite:boolean
+    bgWhite: boolean
 }
-const CategoryList = async ({ categoryKey,bgWhite }: Props) => {
+const CategoryList = async ({ categoryKey, bgWhite }: Props) => {
     let postList: Post[] = [];
     // Fetch dữ liệu từ API (thay URL thành API thật của bạn)
     const res = await fetchCateAlias(categoryKey as string, 1, 5);
     postList = res.Data?.list || [];
-   // console.log(postList)    //   const categories: Category[] = await res.json();
+    // console.log(postList)    //   const categories: Category[] = await res.json();
 
     return (
-        <div className={`p-1 py-2 md:p-6 space-y-12 ${bgWhite?`bg-white`:`bg-[#EAF2FE]`} grid place-items-center`}>
+        <div className={`p-1 py-2 md:p-6 space-y-12 ${bgWhite ? `bg-white` : `bg-[#EAF2FE]`} grid place-items-center`}>
             <div className="container">
 
                 <div className="text-center">
@@ -34,10 +34,10 @@ const CategoryList = async ({ categoryKey,bgWhite }: Props) => {
                         {postList.map((label, i) => {
                             return (
                                 <Link href={`${label.alias + label.id}.html`} key={`${label.id}-${i}`}
-                                className="group bg-white shadow-custom rounded  flex flex-col items-center overflow-hidden cursor-pointer"
+                                    className="group bg-white shadow-custom rounded  flex flex-col items-center overflow-hidden cursor-pointer"
                                 >
                                     <div className="bg-white shadow-custom p-0 flex flex-col items-center cursor-pointer">
-                                        <div className="relative w-full  h-[173px] aspect-[245/173] bg-gray-100  overflow-hidden rounded-md">
+                                        <div className="relative w-full  h-[173px]  bg-gray-100  overflow-hidden rounded-md">
                                             {label.urls ? (
                                                 <Image
                                                     src={`https://nhanmac.vn/${label.urls}`}
@@ -54,9 +54,10 @@ const CategoryList = async ({ categoryKey,bgWhite }: Props) => {
                                                 </div>
                                             )}
                                         </div>
-                                        <p className="text-[15px] line-clamp-2 font-normal text-[#2F80ED] text-left p-2 transition-colors duration-300 group-hover:text-orange-500">
+                                        <p className="text-[15px] font-normal text-[#2F80ED] text-left p-2.5 w-full min-h-[60px]">
                                             {label.content_title}
                                         </p>
+
                                     </div>
                                 </Link>
                             );
