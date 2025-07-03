@@ -14,7 +14,7 @@ export const metadata :Metadata= {
   title: "Công ty cổ phần công nghệ Thiên Lương",
   description: "Thiên Lương - Chuyên in ấn các loại tem nhãn mác kim loại, in đề can, in decal, in tem nhôm, in tem vỡ, in decal trong, in tem nhôm xước, nhãn vải, nhãn tem giấy",
   keywords: "tem nhãn mác| tem nhãn| tem mác| nhãn mác| đề can| in decal| decal vỡ | decan nhựa | tem bảo hành | tem nhôm | nhãn nhôm | tem vỡ | decal trong | tem nhôm xước | tem ăn mòn | nhãn mác kim loại | nhan mac kim loai | mác động cơ | mác máy | tem cửa cuốn | nhãn két | mặt nạ két | tem PVC | tem nhôm | tem mica | tem nổi | logo | logo kim loại | logo nhôm | logo đồng, logo inox |",
-  authors: [{ name: "VietNamNet News" }],
+  authors: [{ name: "NhanMacThienLuong News" }],
   creator: "Admin News",
   publisher: "Admin News",
   metadataBase: new URL("https://nhanmac.vn"),
@@ -41,10 +41,10 @@ export const metadata :Metadata= {
     siteName: "Nhanmac News",
     images: [
       {
-        url: "https://res-files.vnncdn.net/files/2024/1/2/thumb-share-muc.jpg?width=0&s=HSERQwEg5JJy06LMtSHMbw",
+        url: "/images/logo.png",
         width: 800,
         height: 600,
-        alt: "VietNamNet",
+        alt: "NhanMacThienLuong",
       },
     ],
     locale: "vi_VN",
@@ -139,6 +139,7 @@ export default function Home() {
                       20.000
                       <Image
                             src="/icons/+.svg"
+                            
                             width={11}
                             height={11}
                             alt="Thêm 20000 khách hàng"
