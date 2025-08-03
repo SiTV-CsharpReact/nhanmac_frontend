@@ -21,7 +21,11 @@ export const fetchCateAlias = async (
     url.searchParams.append("page", page.toString());
     url.searchParams.append("pageSize", pageSize.toString());
 
-    const response = await fetch(url.toString(), { cache: "no-store" });
+    const response = await fetch(url.toString(), {
+      // cache: "no-store", 
+      next: {
+      revalidate: 60, // Cache trong 60 giây
+    }, });
 
     const data: ApiResponse<Post[]> = await response.json();
     if (data.Code !== 200) {

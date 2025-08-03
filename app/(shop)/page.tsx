@@ -71,21 +71,21 @@ export const metadata :Metadata= {
 const testimonials = [
   {
     comment:
-      "Sản phẩm tem nhãn của 3A vượt trội so với các đơn vị khác. Chất lượng, bền màu và đặc biệt là dịch vụ tư vấn rất tận tâm.",
+      "Sản phẩm tem nhãn của Công ty Thiên Lương vượt trội so với các đơn vị khác. Chất lượng, bền màu và đặc biệt là dịch vụ tư vấn rất tận tâm.",
     author: "Ms. Nguyễn Thị An - Công ty May Mặc Tân Bình",
     company: "Công ty May Mặc ",
   },
   {
     comment:
-      "3A đã giúp chúng tôi có những mẫu tem nhãn đẹp, ấn tượng. Rất hài lòng về sự chuyên nghiệp và sáng tạo của đội ngũ thiết kế rất tỉ mỉ bắt mắt.",
+      "Công ty  Thiên Lương đã giúp chúng tôi có những mẫu tem nhãn đẹp, ấn tượng. Rất hài lòng về sự chuyên nghiệp và sáng tạo của đội ngũ thiết kế rất tỉ mỉ bắt mắt.",
     author: "Mr. Trần Văn Bình - Cơ sở Da Giày SuperSport",
     company: "Cơ sở Da Giày ",
   },
   {
     comment:
-      "Chúng tôi đánh giá cao sự uy tín và chất lượng của 3A. Tem nhãn được giao đúng hẹn, chất lượng đảm bảo, giá cả cạnh tranh mà đem đên chất lượng cùng dịch vụ quá tốt.",
+      "Chúng tôi đánh giá cao sự uy tín và chất lượng của Công ty Thiên Lương. Tem nhãn được giao đúng hẹn, chất lượng đảm bảo, giá cả cạnh tranh mà đem đên chất lượng cùng dịch vụ quá tốt.",
     author: "Mrs. Lê Thị Cúc - HTX Nông Sản Sạch cho mọi nhà",
-    company: "HTX Nông Sản 123",
+    company: "HTX Nông Sản ",
   },
 ];
 

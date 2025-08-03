@@ -97,7 +97,7 @@ const Header = () => {
           </div>
           <div className="marquee-wrapper flex justify-center overflow-hidden max-w-[500px] w-full relative mx-auto">
             <div className="marquee-text text-base">
-              Nhà chuyên sản xuất tem nhãn mác trên mọi chất liệu ✨
+            NHÀ CHUYÊN NGHIỆP SẢN XUẤT TEM NHÃN MÁC TRÊN MỌI CHẤT LIỆU ✨
             </div>
           </div>
           {/* Số người trực tuyến */}

@@ -30,9 +30,17 @@ export async function generateMetadata(
   try {
     const params = await props.params
     const  slug  = params.slug;
+    const searchParams = await props.searchParams;
+    const sp = searchParams;
     const { id, alias } = parseSlug(slug[0]);
     let postList: Post[] = [];
+    let titlePageCate = "";
+    let sttPageId: boolean = false;
+    const page = parseInt((sp?.page as string) || "1");
+    const pageSize = parseInt((sp?.pageSize as string) || "9");
+  
     if (id !== null) {
+      sttPageId = true;
       const { data } = await fetchContentBySlugId(alias, id);
       if (data?.Data?.correctUrl) {
         postList = [data.Data.article];
@@ -41,7 +49,13 @@ export async function generateMetadata(
         postList = [data.Data]; // gói vào mảng để dễ xử lý nếu cần
       }
     }
-
+    else{
+      sttPageId = false;
+      const  data  = await fetchCateAlias(alias, page, pageSize);
+      console.log(data,"data cate",page,pageSize)
+      titlePageCate = data?.Data?.list[0]?.category_title;
+    
+    }
     // if (!postList[0]) {
     //   return {
     //     title: "Sản phẩm không tồn tại",
@@ -50,9 +64,9 @@ export async function generateMetadata(
     // }
 
     return {
-      title: postList[0]?.title || `Sản phẩm ${id}`,
-      description: postList[0]?.metadesc || `Chi tiết sản phẩm mã ${id}`,
-      keywords: postList[0]?.metakey || "",
+      title: sttPageId? postList[0]?.title : `${titlePageCate} - Công ty Cổ phần Công Nghệ Thiên Lương` ,
+      description: postList[0]?.metadesc || `${titlePageCate} - Công ty Cổ phần Công Nghệ Thiên Lương`,
+      keywords: postList[0]?.metakey || `${titlePageCate} - Công ty Cổ phần Công Nghệ Thiên Lương`,
       openGraph: {
         title: postList[0]?.title,
         description: postList[0]?.description,
@@ -63,7 +77,7 @@ export async function generateMetadata(
       twitter: {
         card: "summary_large_image",
         title: postList[0]?.title,
-        description: postList[0]?.metadesc || `Chi tiết sản phẩm mã ${id}`,
+        description: postList[0]?.metadesc || `${titlePageCate} - Công ty Cổ phần Công Nghệ Thiên Lương`,
         images: [postList[0]?.images],
       },
       alternates: {

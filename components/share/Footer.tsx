@@ -173,7 +173,7 @@ const Footer = () => {
       </div>
 
       {/* Copyright */}
-      <div className="py-2 mt-6  border-t border-[#CFCFCF] text-center text-sm text-white container">
+      <div className="py-2 mt-6  border-t border-[#CFCFCF] text-center text-sm text-white">
         <p>
           Bản quyền bài viết, hình ảnh trên website thuộc về Công ty Cổ phần
           Công Nghệ Thiên Lương. Nghiêm cấm sao chép dưới mọi hình thức.

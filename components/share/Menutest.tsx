@@ -66,77 +66,72 @@ export default function MenuTest() {
         return roots;
     };
 
-    const handleClick = (link: string, id?: number, parentId?: number,nameParent?:string) => {
+    const handleClick = (link: string, id?: number, parentId?: number, nameParent?: string) => {
         // console.log(nameParent)
         if (id) setActiveSubMenuId(id);         // đánh dấu menu con
         if (parentId) setActiveMenuId(parentId); // đánh dấu menu cha
-        nameParent&& Cookies.set('activeParent', nameParent); 
+        nameParent && Cookies.set('activeParent', nameParent);
         const url = '/' + link.replace(/^index\.php\?/, '').replace(/&/g, '/').replace(/=/g, '-');
         router.push(url);
         setOpen(false)
-      };
+    };
 
     const renderMenuHorizontal = (items: MenuItem[]) => {
         return (
-            <ul className="flex flex-wrap text-[#1f2b46] items-center justify-start py-1 gap-4">
-                <Link href={'/'} className=' !mr-[7%]'>
-                <Image
-                    src="/images/logo.png"
-                    width={56}
-                    height={20}
-                    alt="Logo"
-                    className="mx-auto md:mx-0"
-                />
-                </Link>
-               
-                {items.map(item => {
-                    // if (item?.parent !== 0 || item?.published !== 1) return null;
-                    return (
-                        <li
-                            key={item.id}
-                            onMouseEnter={() => setOpenMenuId(item.id)}
-                            onMouseLeave={() => setOpenMenuId(null)}
-                            className="relative"
-                        >
-                            <button
-                         onClick={() => handleClick(item.link, item.id,100,item.name)}
-                         className={`uppercase font-bold text-sm py-1 transition flex items-center gap-0.5 hover:text-[#589fff] ${
-                            activeMenuId === item.id ? 'text-[#589fff]' : ''
-                          }`}
+            <>
+
+                <ul className="flex flex-wrap text-[#1f2b46] items-center justify-start py-1 gap-4">
+
+
+                    {items.map(item => {
+                        // if (item?.parent !== 0 || item?.published !== 1) return null;
+                        return (
+                            <li
+                                key={item.id}
+                                onMouseEnter={() => setOpenMenuId(item.id)}
+                                onMouseLeave={() => setOpenMenuId(null)}
+                                className="relative"
                             >
-                                {item.name}
-                                {item.children && item.children.length > 0 && (
-                                    <CaretDownOutlined className="text-inherit" />
-                                )}
-                            </button>
+                                <button
+                                    onClick={() => handleClick(item.link, item.id, 100, item.name)}
+                                    className={`uppercase font-bold text-sm py-1 transition flex items-center gap-0.5 hover:text-[#589fff] ${activeMenuId === item.id ? 'text-[#589fff]' : ''
+                                        }`}
+                                >
+                                    {item.name}
+                                    {item.children && item.children.length > 0 && (
+                                        <CaretDownOutlined className="text-inherit" />
+                                    )}
+                                </button>
 
-                            {item.children && item.children.length > 0 && openMenuId === item.id && (
-                                <ul className="absolute left-0 top-full min-w-[220px] bg-[#EAF2FE] rounded shadow-lg z-50 border border-[#4B465C1A]">
-                                    {item.children.map((sub) => (
-                                        <li
-                                            key={sub.id}
-                                            onMouseEnter={() => setOpenSubMenuId(sub.id)}
-                                            onMouseLeave={() => setOpenSubMenuId(null)}
-                                            className="relative"
-                                        >
-                                            <button
-                                                  onClick={() => handleClick(sub.link, sub.id, item.id,item.name)}
-                                                  className={`block w-full text-left px-4 py-2 hover:bg-[#589fff] hover:text-white hover:shadow-lg cursor-pointer ${
-                                                    activeSubMenuId === sub.id ? 'bg-[#589fff] text-white' : ''
-                                                  }`}
+                                {item.children && item.children.length > 0 && openMenuId === item.id && (
+                                    <ul className="absolute left-0 top-full min-w-[220px] bg-[#EAF2FE] rounded shadow-lg z-50 border border-[#4B465C1A]">
+                                        {item.children.map((sub) => (
+                                            <li
+                                                key={sub.id}
+                                                onMouseEnter={() => setOpenSubMenuId(sub.id)}
+                                                onMouseLeave={() => setOpenSubMenuId(null)}
+                                                className="relative"
                                             >
-                                                {sub.name}
-                                            </button>
+                                                <button
+                                                    onClick={() => handleClick(sub.link, sub.id, item.id, item.name)}
+                                                    className={`block w-full text-left px-4 py-2 hover:bg-[#589fff] hover:text-white hover:shadow-lg cursor-pointer ${activeSubMenuId === sub.id ? 'bg-[#589fff] text-white' : ''
+                                                        }`}
+                                                >
+                                                    {sub.name}
+                                                </button>
 
 
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </li>
-                    );
-                })}
-            </ul>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </li>
+                        );
+                    })}
+                </ul>
+
+            </>
+
         );
     };
 
@@ -146,7 +141,7 @@ export default function MenuTest() {
                 <li key={item.id}>
                     <div className="flex justify-between items-center">
                         <button
-                             onClick={() => handleClick(item.link)}
+                            onClick={() => handleClick(item.link)}
                             className="text-left font-semibold text-[#1f2b46] uppercase w-full py-2"
                         >
                             {item.name}
@@ -197,7 +192,7 @@ export default function MenuTest() {
 
     return (
         <div className="bg-[#EAF2FE] shadow-custom-md">
-            <div className="container mx-auto py-2 flex justify-between items-center relative">
+            <div className="container mx-auto py-2 flex items-center relative">
                 <button
                     className="md:hidden text-white bg-[#2F80ED] px-2 py-1 ml-1 rounded"
                     onClick={() => setOpen(!open)}
@@ -207,20 +202,35 @@ export default function MenuTest() {
 
 
                 <div className="absolute left-1/2 -translate-x-1/2 md:hidden md:translate-x-0">
-                <Link href={'/'} >
-                    <Image
-                        src="/images/logo.png"
-                        width={56}
-                        height={20}
-                        alt="Logo"
-                        className="md:mx-0"
-                    />
+                    <Link href={'/'} className='flex-shrink-0'>
+                        <Image
+                            src="/images/logo.png"
+                            width={56}
+                            height={20}
+                            alt="Logo"
+                            className="md:mx-0"
+                        />
                     </Link>
                 </div>
                 {/* Desktop menu */}
-                <nav className="hidden md:block">
-                    {renderMenuHorizontal(menus)}
-                </nav>
+                <div className="hidden md:flex items-center w-full ">
+                    {/* Logo bên trái */}
+                    <Link href="/" className="flex-shrink-0">
+                        <Image
+                            src="/images/logo.png"
+                            width={56}
+                            height={20}
+                            alt="Logo"
+                            className="mx-0"
+                        />
+                    </Link>
+
+                    {/* Menu căn giữa */}
+                    <nav className="flex-grow flex justify-center">
+                        {renderMenuHorizontal(menus)}
+                    </nav>
+                </div>
+
 
                 {/* Mobile menu */}
                 {open && (
