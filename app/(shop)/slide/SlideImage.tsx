@@ -5,6 +5,7 @@ import Image from "next/image";
 import { fetchSlides } from "@/modules/client/hompageApi";
 import { Post } from "@/types/contentItem";
 import Link from "next/link";
+import { renderUrl } from "@/utils/util";
 
 const SlideImage = () => {
   const [slides, setSlides] = useState<Post[]>([]);
@@ -17,6 +18,7 @@ const SlideImage = () => {
         if (response.Code === 200 && response.Data) {
           setSlides(response.Data);
         }
+        console.log(response.Data,"zpo")
       } catch (error) {
         console.error("Lỗi khi tải slides:", error);
       } finally {
@@ -59,7 +61,8 @@ const SlideImage = () => {
       <div className="lg:col-span-7">
         <Carousel {...settings} className="mb-2.5">
           {slides.slice(0, 3).map((slide) => (
-            // console.log(`https://nhanmac.vn/${slide.urls}`),
+            // console.log(`https://nhanmac.vn/${slide.urls}`),  
+             console.log(renderUrl(slide?.urls)),
             <div
               key={slide.id}
               role="group"
@@ -68,7 +71,8 @@ const SlideImage = () => {
             >
               <Link href={`/${slide.alias}-${slide.id}.html`} title={slide.title}>
                 <Image
-                  src={`https://nhanmac.vn/${slide.urls}`}
+                //  src={'https://backend.nhanmac.vn/upload/image/TVT1-%20Tem%20vải%20in%20thêu%20dệt%20nhãn%20mác%20Logo%20quần%20áo%20thời%20trang%20may%20mặc%20là%20loại%20được%20sử%20dụng%20rất%20nhiều%20trên%20thị%20trường%20may%20mặc%20hiện%20nay.jpg'}
+                  src={renderUrl(slide?.urls)}
                   width={764}
                   height={515}
                   alt={slide.title || "Slide image"}
@@ -91,13 +95,15 @@ const SlideImage = () => {
       <aside className="lg:col-span-5" aria-label="Related slides">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 h-full overflow-auto pb-2.5">
           {slides.slice(3, 7).map((item) => (
+            // console.log(item.urls),
             <article
               key={item.id}
               className="flex flex-col h-full cursor-pointer bg-white shadow-custom hover:shadow--md transition overflow-hidden"
             >
               <Link href={`/${item.alias}-${item.id}.html`} title={item.title} className="group bg-white rounded  cursor-pointer">
                 <Image
-                   src={`https://nhanmac.vn/${item.urls}`}
+                 src={renderUrl(item?.urls)}
+                  //  src={renderUrl('upload/image/Ảnh màn hình 2025-11-13 lúc 14.19.24.png')}
                   alt={item.title || "Slide image"}
                   title={item.title}
                   width={300}

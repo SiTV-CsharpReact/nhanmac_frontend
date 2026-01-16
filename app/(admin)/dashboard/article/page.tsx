@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Table, Button, Tag, Tooltip, Form, Modal, notification, Space, Popconfirm,Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { dateFormat, statusXB } from "../../../../config/config";
-import { formatMoney, getConstantLabel, getTagColor } from "../../../../utils/util";
+import { formatMoney, getConstantLabel, getTagColor, renderSlugUrl } from "../../../../utils/util";
 import dayjs from 'dayjs';
 // import { FileSearchOutlined, PlusCircleOutlined } from "ant-design/icons";
 import { DeleteIcon, EditIcon } from "@/components/icons/Icons";
@@ -17,7 +17,7 @@ import TitlePageAdmin from "@/components/share/TitlePageAdmin";
 import type { TablePaginationConfig } from "antd/es/table";
 
 import { env } from "../../../../config/env";
-import { FileSearchOutlined, PlusCircleOutlined } from "@ant-design/icons/lib/icons";
+import { FileSearchOutlined, LinkOutlined, PlusCircleOutlined } from "@ant-design/icons/lib/icons";
 interface TableParams {
   pagination?: TablePaginationConfig;
   sortField?: string;
@@ -96,6 +96,7 @@ const Page: React.FC = () => {
       pageSize: 10,
     },
   });
+  const baseUrl = window.location.origin;  
   // Reset form khi mở modal
   useEffect(() => {
     if (isSttModal?.openModal) {
@@ -108,12 +109,12 @@ const Page: React.FC = () => {
   const fetchData = async (page = 1, pageSize = 10) => {
     setLoading(true);
     const values = await form.validateFields();
-    const { created, state, sectionid, keyword } = values;
+    const {state, sectionid, keyword } = values;
   
     try {
       const response = await fetchContent({
-        startTime: created[0].format(dateFormat),
-        endTime: created[1].format(dateFormat),
+        startTime: "01/01/2000",
+        endTime: "01/01/2099",
         page: page,             // ✅ KHÔNG -1
         pageSize: pageSize,
         state,
@@ -239,17 +240,23 @@ const Page: React.FC = () => {
     {
       title: "Link bài viết",
       // key: "alias",
-      width:280, // đặt width cố định để ellipsis hoạt động tốt
+      width:100, // đặt width cố định để ellipsis hoạt động tốt
+      align:'center',
       render: (text, record) => (
-      
-        <EllipsisWithTooltip
-          text={
-            <a href={`${env.host}${record.alias}-${record.id}.html`} target="_blank" rel="noopener noreferrer">
-              {`${record.alias}-${record.id}.html`}
+        console.log(`${record.alias}-${record.id}.html`),
+        // <EllipsisWithTooltip
+        //   text={
+        //     <a href={`${window.location.origin}/${record?.alias}-${record.id}.html`}  target="_blank" rel="noopener noreferrer">
+        //       {`${record.alias}-${record.id}.html`}
+        //     </a>
+        //   }
+        //   maxWidth={280}
+        // />
+        <a href={`${window.location.origin}/${record?.alias}-${record.id}.html`}  target="_blank" rel="noopener noreferrer">
+             <Tooltip title="Xem bài viết">
+  <LinkOutlined style={{ fontSize: 18, color: '#1890ff', cursor: 'pointer' }} />
+</Tooltip>
             </a>
-          }
-          maxWidth={280}
-        />
       ),
     },
     {
@@ -374,7 +381,24 @@ const Page: React.FC = () => {
           children={
             <>
               {isSttModal?.typeModal === 0 ? (
-                <ViewArticle data={dataDetail?.introtext} />
+                <ViewArticle data={dataDetail?.introtext.replace(
+                  /href="(?:index\.php\/)?[^"]*\/(\d+)-([a-zA-Z0-9\-]+)(?:\.html)?"/g,
+                  (match, id, slug) => `href="${slug}-${id}.html"`
+                )
+                .replace(
+                  /src="upload\/image\/([^"]+)"/g,
+                  (match, filename) => {
+                    return `src="${renderSlugUrl(filename)}"`
+                  }
+                ).replace(
+                  /(<img[^>]*?)\swidth="[^"]*"/g,
+                  (match, startTag) => `${startTag} width="100%"`
+                )
+                .replace(
+                  /<img((?![^>]*width=)[^>]*)>/g,
+                  (match, inside) => `<img${inside} width="100%">`
+                )
+                } />
               ) : (
                 <ContentArticle
                   typeModal={isSttModal?.typeModal}

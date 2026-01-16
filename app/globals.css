@@ -454,3 +454,6 @@ button{
   0% { transform: translateX(100%); }
   100% { transform: translateX(-100%); }
 }
+.h2{
+  font-weight: 600 !important;
+}

@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import { escape } from "lodash";
 import moment from "moment";
 
 export function getConstantLabel(
@@ -83,15 +84,103 @@ export function parseSlug(slug: string) {
   };
 }
 
+// export const removeVietnameseTones = (str: string) => {
+//   return str
+//     .normalize("NFD")
+//     .replace(/[\u0300-\u036f]/g, "")
+//     .replace(/đ/g, "d")
+//     .replace(/Đ/g, "D")
+//     .replace(/\s+/g, "-")
+//     .replace(/[^\w\-]+/g, "")
+//     .replace(/\-\-+/g, "-")
+//     .replace(/^-+|-+$/g, "")
+//     .toLowerCase();
+// };
 export const removeVietnameseTones = (str: string) => {
+  // Chuyển mã hóa (%20, ...) thành dấu cách trước để xử lý toàn diện
+  str = decodeURIComponent(str);
   return str
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/g, "d")
-    .replace(/Đ/g, "D")
-    .replace(/\s+/g, "-")
-    .replace(/[^\w\-]+/g, "")
-    .replace(/\-\-+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .toLowerCase();
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Loại bỏ dấu Unicode
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .replace(/\s+/g, '_')           // Thay toàn bộ dấu cách bằng "_"
+    // .replace(/[^\w\-\.]/g, '');     // Loại các ký tự đặc biệt còn lại, trừ _ - .
+    .toLowerCase();  
 };
+
+export const renderUrl = (url: string | null | undefined) =>{
+  let urlLink ="";
+  if(url){
+    if(url.includes("https")||url.includes("http")){
+      urlLink = url
+    }
+    else{
+      urlLink = `https://backend.nhanmac.vn/${url}`
+    }
+  }
+  
+  return removeVietnameseTones(urlLink)
+}
+// export const renderSlugUrl = (url: string | null | undefined) =>{
+//   let urlLink ="";
+//   if(url){
+//     if(url.includes("https")||url.includes("http")){
+//       urlLink = url
+//     }
+//     else{
+//       urlLink = `https://backend.nhanmac.vn/upload/image/${url}`
+//     }
+//   }
+//   // console.log(removeVietnameseTones(urlLink),'zo')
+//   return removeVietnameseTones(urlLink)
+// }
+export const renderSlugUrl = (url?: string | null) => {
+  console.log(url)
+  if (!url) return "";
+
+  let urlLink = url.trim();
+
+  const isAbsolute = /^https?:\/\//i.test(urlLink);
+
+  // Decode %20, %xx
+  try {
+    urlLink = decodeURIComponent(urlLink);
+  } catch (e) {
+    // ignore malformed URI
+  }
+
+  // Bỏ "/" đầu nếu có
+  urlLink = urlLink.replace(/^\/+/, "");
+
+  if (!isAbsolute) {
+    if (urlLink.startsWith("upload/image/")) {
+      urlLink = `https://backend.nhanmac.vn/${urlLink}`;
+    } else {
+      urlLink = `https://backend.nhanmac.vn/upload/image/${urlLink}`;
+    }
+  }
+
+  // Normalize path
+  // urlLink = urlLink
+  //   .replace(/_/g, "-")       // _ → -
+  //   .replace(/\s+/g, "-")     // space → -
+  //   .replace(/--+/g, "-");    // gộp --
+
+  return removeVietnameseTones(urlLink.toLowerCase());
+};
+
+
+
+// export const renderUrl = (url: string | null | undefined) => {
+//   let urlLink = '';
+//   if (url) {
+//     let urlNoAccent = removeVietnameseTones(url);
+//     if (urlNoAccent.includes('https') || urlNoAccent.includes('http')) {
+//       urlLink = urlNoAccent;
+//     } else {
+//       urlLink = `https://backend.nhanmac.vn/${urlNoAccent}`;
+//     }
+//   }
+//   return urlLink;
+// };

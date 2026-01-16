@@ -3,6 +3,7 @@ import { Post } from '@/types/contentItem';
 import Image from 'next/image';
 import Link from 'next/link';
 import Cookies from 'js-cookie';
+import { renderUrl } from '@/utils/util';
 // Giả sử API trả về mảng object dạng { id, title, image, imageAlt }
 type Category = {
     id: number | string;
@@ -20,7 +21,7 @@ const CategoryList = async ({ categoryKey, bgWhite }: Props) => {
     const res = await fetchCateAlias(categoryKey as string, 1, 5);
     postList = res.Data?.list || [];
     // console.log(postList)    //   const categories: Category[] = await res.json();
-
+    // console.log(first)
     return (
         <div className={`p-1 py-2 md:p-6 space-y-12 ${bgWhite ? `bg-white` : `bg-[#EAF2FE]`} grid place-items-center`}>
             <div className="container">
@@ -32,6 +33,7 @@ const CategoryList = async ({ categoryKey, bgWhite }: Props) => {
                     <div className="h-1 bg-[#2F80ED] mx-auto w-1/2 max-w-[255px] mb-5 sm:w-[255px]"></div>
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                         {postList.map((label, i) => {
+                            console.log(label.urls)
                             return (
                                 <Link href={`${label.alias + label.id}.html`} key={`${label.id}-${i}`}
                                     className="group bg-white shadow-custom rounded  flex flex-col items-center overflow-hidden cursor-pointer"
@@ -40,7 +42,7 @@ const CategoryList = async ({ categoryKey, bgWhite }: Props) => {
                                         <div className="relative w-full  h-[173px]  bg-gray-100  overflow-hidden rounded-md">
                                             {label.urls ? (
                                                 <Image
-                                                    src={`https://nhanmac.vn/${label.urls}`}
+                                                    src={renderUrl(label.urls)}
                                                     alt={label.image_desc || "Ảnh sản phẩm"}
                                                     fill
                                                     style={{ objectFit: 'cover' }}

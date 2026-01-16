@@ -1,87 +1,457 @@
+// import PostNews from "@/components/share/PostNews";
+// import TitlePage from "@/components/share/TitlePage";
+// import { Post } from "@/types/contentItem";
+// import { redirect } from "next/navigation";
+// import { fetchCateAlias, fetchContentBySlugId } from "@/modules/client/menuApi";
+// import { parseSlug, renderSlugUrl, renderUrl } from "../../../utils/util";
+// import Pagination from "./components/Pagination";
+// import CatePage from "./components/CatePage";
+// import { Metadata, ResolvingMetadata } from "next";
+// import Script from "next/script";
+// import { Suspense } from "react";
+// import Loading from "@/components/share/Loading";
+// // @ts-ignore
+// type Props = {
+//   params: Promise<{ slug: string }>;
+//   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+// };
+
+// type Params = Promise<{ slug: string }>
+// type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>
+
+// // type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>
+// export async function generateMetadata(
+//   props: {
+//     params: Params
+//     searchParams: SearchParams
+//   },
+//   parent: ResolvingMetadata
+// ): Promise<Metadata> {
+//   try {
+//     const params = await props.params
+//     const  slug  = params.slug;
+//     const searchParams = await props.searchParams;
+//     const sp = searchParams;
+//     const { id, alias } = parseSlug(slug[0]);
+//     let postList: Post[] = [];
+    
+//     let titlePageCate = "";
+//     let sttPageId: boolean = false;
+//     const page = parseInt((sp?.page as string) || "1");
+//     const pageSize = parseInt((sp?.pageSize as string) || "9");
+  
+//     if (id !== null) {
+//       sttPageId = true;
+//       const { data } = await fetchContentBySlugId(alias, id);
+//       if (data?.Data?.correctUrl) {
+//         postList = [data?.data?.article];
+//         // redirect(data?.Data?.correctUrl)
+//       } else {
+//         postList = [data?.Data]; // gói vào mảng để dễ xử lý nếu cần
+//       }
+//     }
+//     else{
+//       sttPageId = false;
+//       const  data  = await fetchCateAlias(alias, page, pageSize);
+//       console.log(data,"data cate",page,pageSize)
+//       titlePageCate = data?.Data?.list[0]?.category_title;
+    
+//     }
+//     // if (!postList[0]) {
+//     //   return {
+//     //     title: "Sản phẩm không tồn tại",
+//     //     description: "Không tìm thấy thông tin sản phẩm",
+//     //   };
+//     // }
+
+//     return {
+//       title: sttPageId? postList[0]?.title : `${titlePageCate} - Công ty Cổ phần Công Nghệ Thiên Lương` ,
+//       description: postList[0]?.metadesc || `${titlePageCate} - Công ty Cổ phần Công Nghệ Thiên Lương`,
+//       keywords: postList[0]?.metakey || `${titlePageCate} - Công ty Cổ phần Công Nghệ Thiên Lương`,
+//       openGraph: {
+//         title: postList[0]?.title,
+//         description: postList[0]?.description,
+//         images: [postList[0]?.images],
+//         type: "article",
+//         url: postList[0]?.urls,
+//       },
+//       twitter: {
+//         card: "summary_large_image",
+//         title: postList[0]?.title,
+//         description: postList[0]?.metadesc || `${titlePageCate} - Công ty Cổ phần Công Nghệ Thiên Lương`,
+//         images: [postList[0]?.images],
+//       },
+//       alternates: {
+//         canonical: postList[0]?.urls,
+//       },
+//       robots: {
+//         index: true,
+//         follow: true,
+//       },
+//       icons: {
+//         icon: "https://nhanmac.vn/templates/nhanmac/favicon.ico",
+//         apple: [
+//           { url: "https://nhanmac.vn/templates/nhanmac/favicon.ico", sizes: "72x72" },
+//           { url: "https://nhanmac.vn/templates/nhanmac/favicon.ico", sizes: "114x114" },
+//           { url: "https://nhanmac.vn/templates/nhanmac/favicon.ico", sizes: "57x57" },
+//         ],
+//       },
+//     };
+//   } catch (error) {
+//     console.error("Lỗi khi tạo metadata:", error);
+//     return {
+//       title: "Sản phẩm | Công ty chúng tôi",
+//       description: "Thông tin chi tiết về sản phẩm",
+//     };
+//   }
+// }
+// // @ts-ignore
+
+// // utils/pageData.ts
+// export interface PageData {
+//   isPostPage: boolean;
+//   postList: Post[];
+//   title: string;
+//   total?: number;
+//   totalPages?: number;
+//   alias: string;
+// }
+
+// async function getPageData(
+//   slug: string,
+//   page: number = 1,
+//   pageSize: number = 9
+// ): Promise<PageData | null> {
+//   const { id, alias } = parseSlug(slug);
+//   const invalidFiles = ["favicon.ico", "upload", "sitemap.xml"];
+
+//   if (invalidFiles.includes(slug.toLowerCase()) || invalidFiles.includes(alias)) {
+//     return null;
+//   }
+
+//   let postList: Post[] = [];
+//   let title = "";
+//   let total = 0;
+//   let totalPages = 0;
+//   let isPostPage = false;
+
+//   if (id !== null) {
+//     isPostPage = true;
+//     const { data } = await fetchContentBySlugId(alias, id);
+    
+//     if (data?.Data?.correctUrl) {
+//       redirect(data.Data.correctUrl);
+//     }
+    
+//     postList = [data?.Data || data?.data?.article || {} as Post];
+//     title = data?.Data?.parent_cat_name || "";
+//   } else {
+//     isPostPage = false;
+//     const res = await fetchCateAlias(alias, page, pageSize);
+    
+//     if (!res?.Data?.list?.length) {
+//       return null;
+//     }
+    
+//     postList = res.Data.list;
+//     total = res.Data.total || 0;
+//     totalPages = res.Data.totalPages || 0;
+//     title = res.Data.list?.[0]?.category_title || "";
+//   }
+
+//   return { isPostPage, postList, title, total, totalPages, alias };
+// }
+
+
+// export default async function Page(props: {
+//   params: Params
+//   searchParams: SearchParams
+// }) {
+//   const params = await props.params
+//   const searchParams = await props.searchParams;
+
+//   const slug = params.slug;
+//   const sp = searchParams;
+//   const invalidFiles = ["favicon.ico", "upload", "sitemap.xml"];
+
+//   if (slug.length === 1 && invalidFiles.includes(slug[0].toLowerCase())) {
+//     return null;
+//   }
+
+//   const { id, alias } = parseSlug(slug[0]);
+//   if (invalidFiles.includes(alias)) {
+//     return null;
+//   }
+//   const page = parseInt((sp?.page as string) || "1");
+//   const pageSize = parseInt((sp?.pageSize as string) || "9");
+
+//   let sttPageId: boolean = false;
+//   let postList: Post[] = [];
+//   let total = 0;
+//   let totalPages = 0;
+//   let textTitle;
+//   let data;
+//   let res;
+//   if (id !== null) {
+//     const response = await fetchContentBySlugId(alias, id);
+//     data = response?.data;
+//     // console.log(data,'data')
+//   } else {
+//     res = await fetchCateAlias(alias as string, page, pageSize);
+//     if (!res || res.data?.length === 0) {
+//       redirect('/not-found');
+//       return null;
+//     }
+//   }
+//   if (id !== null) {
+//     sttPageId = true;
+//     // res.Data là 1 Post object
+//     if (data?.Data?.correctUrl) {
+//       textTitle = data?.Data?.article?.parent_cat_name;
+//       postList = [data?.data?.article];
+//       return redirect(data?.Data?.correctUrl);
+//     } else {
+//       textTitle = data?.Data?.parent_cat_name;
+//       postList = [data?.Data]; // gói vào mảng để dễ xử lý nếu cần
+//     }
+//   } else {
+//     sttPageId = false;
+//     postList = res.Data?.list || [];
+//     total = res.Data?.total || 0;
+//     totalPages = res.Data?.totalPages || 0;
+//     textTitle = res.Data?.list[0]?.category_title
+//   }
+
+//   if (!postList || postList.length === 0) {
+//     redirect('/not-found');
+//     return null;
+//   }
+//   const firstPost = pageData.postList?.[0];
+//   const jsonLd = {
+//     "@context": "https://schema.org",
+//     "@type": "NewsArticle",
+//     headline: postList[0]?.title,
+//     image: [postList[0]?.images],
+//     datePublished: postList[0]?.publish_up,
+//     dateModified: postList[0]?.modified,
+//     author: {
+//       "@type": "Person",
+//       name: "Nhanmac",
+//     },
+//     publisher: {
+//       "@type": "Organization",
+//       name: postList[0]?.title,
+//       logo: {
+//         "@type": "ImageObject",
+//         url: "/logo.png",
+//         width: 130,
+//         height: 60,
+//       },
+//     },
+//     description: postList[0]?.metadesc,
+//   };
+//   //  console.log(postList[0].introtext)
+//   return (
+//     <main className="mx-auto px-4">
+//       {" "}
+//       {/* Thêm padding ngang cho mobile */}
+//       <div className="max-w-full md:max-w-7xl mx-auto mb-6">
+//         {" "}
+//         {/* Giới hạn max-width trên md trở lên */}
+//         {/* Tiêu đề */}
+//         <TitlePage text={textTitle} />
+//         <div className="flex flex-col md:flex-row gap-6">
+//           {/* Nội dung chính */}
+//           <article className="w-full md:w-2/3">
+//             {sttPageId ? (
+//               postList[0]?.introtext ? (
+//                 <Suspense fallback={<Loading />}>
+//                   <section
+//                     className="prose max-w-full"
+//                     dangerouslySetInnerHTML={{
+//                       __html: postList[0]?.introtext
+//                         .replace(
+//                           /href="(?:index\.php\/)?[^"]*\/(\d+)-([a-zA-Z0-9\-]+)(?:\.html)?"/g,
+//                           (match, id, slug) => `href="${slug}-${id}.html"`
+//                         )
+//                         .replace(
+//                           /src="upload\/image\/([^"]+)"/g,
+//                           (match, filename) => {
+//                             return `src="${renderSlugUrl(filename)}"`
+//                           }
+//                         ).replace(
+//                           /(<img[^>]*?)\swidth="[^"]*"/g,
+//                           (match, startTag) => `${startTag} width="100%"`
+//                         )
+//                         .replace(
+//                           /<img((?![^>]*width=)[^>]*)>/g,
+//                           (match, inside) => `<img${inside} width="100%">`
+//                         )
+//                         ,
+//                     }}
+//                   />
+//                 </Suspense>
+//               ) : (
+//                 <p className="text-gray-500">Đang cập nhật nội dung...</p>
+//               )
+//             ) : (
+//               <>
+//                 <Suspense fallback={<Loading />}>
+//                   <CatePage postList={postList} />
+//                   <Pagination
+//                     page={page}
+//                     totalPages={totalPages}
+//                     alias={alias as string}
+//                   />
+//                 </Suspense>
+//               </>
+//             )}
+//             <Script
+//               id="news-article-jsonld"
+//               type="application/ld+json"
+//               dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+//             />
+//           </article>
+
+//           {/* Sidebar */}
+//           <aside className="w-full md:w-1/3 flex flex-col gap-6">
+
+//             <PostNews />
+
+//           </aside>
+//         </div>
+//       </div>
+//     </main>
+//   );
+// }
 import PostNews from "@/components/share/PostNews";
 import TitlePage from "@/components/share/TitlePage";
 import { Post } from "@/types/contentItem";
 import { redirect } from "next/navigation";
 import { fetchCateAlias, fetchContentBySlugId } from "@/modules/client/menuApi";
-import { parseSlug } from "../../../utils/util";
+import { parseSlug, renderSlugUrl } from "../../../utils/util";
 import Pagination from "./components/Pagination";
 import CatePage from "./components/CatePage";
-import { Metadata, ResolvingMetadata } from "next";
+import { Metadata } from "next";
 import Script from "next/script";
 import { Suspense } from "react";
 import Loading from "@/components/share/Loading";
-// @ts-ignore
-type Props = {
-  params: Promise<{ slug: string }>;
-  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
-};
 
-type Params = Promise<{ slug: string }>
-type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>
+type Params = Promise<{ slug: string }>;
+type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
-// type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>
-export async function generateMetadata(
-  props: {
-    params: Params
-    searchParams: SearchParams
-  },
-  parent: ResolvingMetadata
-): Promise<Metadata> {
-  try {
-    const params = await props.params
-    const  slug  = params.slug;
-    const searchParams = await props.searchParams;
-    const sp = searchParams;
-    const { id, alias } = parseSlug(slug[0]);
-    let postList: Post[] = [];
-    let titlePageCate = "";
-    let sttPageId: boolean = false;
-    const page = parseInt((sp?.page as string) || "1");
-    const pageSize = parseInt((sp?.pageSize as string) || "9");
-  
-    if (id !== null) {
-      sttPageId = true;
-      const { data } = await fetchContentBySlugId(alias, id);
-      if (data?.Data?.correctUrl) {
-        postList = [data.Data.article];
-        // redirect(data?.Data?.correctUrl)
-      } else {
-        postList = [data.Data]; // gói vào mảng để dễ xử lý nếu cần
-      }
-    }
-    else{
-      sttPageId = false;
-      const  data  = await fetchCateAlias(alias, page, pageSize);
-      console.log(data,"data cate",page,pageSize)
-      titlePageCate = data?.Data?.list[0]?.category_title;
+interface PageData {
+  isPostPage: boolean;
+  postList: Post[];
+  title: string;
+  total?: number;
+  totalPages?: number;
+  alias: string;
+}
+
+// Helper function lấy dữ liệu trang
+async function getPageData(
+  slug: string,
+  page: number = 1,
+  pageSize: number = 9
+): Promise<PageData | null> {
+  const { id, alias } = parseSlug(slug);
+  const invalidFiles = ["favicon.ico", "upload", "sitemap.xml"];
+
+  if (invalidFiles.includes(slug.toLowerCase()) || invalidFiles.includes(alias)) {
+    return null;
+  }
+
+  if (id !== null) {
+    // Trang bài viết chi tiết
+    const { data } = await fetchContentBySlugId(alias, id);
     
+    if (data?.Data?.correctUrl) {
+      redirect(data.Data.correctUrl);
     }
-    // if (!postList[0]) {
-    //   return {
-    //     title: "Sản phẩm không tồn tại",
-    //     description: "Không tìm thấy thông tin sản phẩm",
-    //   };
-    // }
+    
+    const post = data?.Data || data?.data?.article || ({} as Post);
+    return {
+      isPostPage: true,
+      postList: [post],
+      title: data?.Data?.parent_cat_name || "",
+      alias
+    };
+  } else {
+    // Trang danh mục
+    const res = await fetchCateAlias(alias, page, pageSize);
+    
+    if (!res?.Data?.list?.length) {
+      return null;
+    }
+    
+    return {
+      isPostPage: false,
+      postList: res.Data.list,
+      title: res.Data.list?.[0]?.category_title || "",
+      total: res.Data.total || 0,
+      totalPages: res.Data.totalPages || 0,
+      alias
+    };
+  }
+}
+
+// Xử lý nội dung bài viết
+function processPostContent(content?: string): string {
+  if (!content) return "";
+  
+  return content
+    .replace(/href="(?:index\.php\/)?[^"]*\/(\d+)-([a-zA-Z0-9\-]+)(?:\.html)?"/g, (match, id, slug) => `href="${slug}-${id}.html"`)
+    .replace(/src="upload\/image\/([^"]+)"/g, (match, filename) => `src="${renderSlugUrl(filename)}"`)
+    .replace(/(<img[^>]*?)\swidth="[^"]*"/g, '$1 width="100%"')
+    .replace(/<img((?![^>]*width=)[^>]*)>/g, `<img$1 width="100%">`);
+}
+
+export async function generateMetadata({
+  params,
+  searchParams
+}: {
+  params: Params;
+  searchParams: SearchParams;
+}): Promise<Metadata> {
+  try {
+    const { slug } = await params;
+    const sp = await searchParams;
+    const page = parseInt((sp?.page as string) || "1");
+    
+    const pageData = await getPageData(slug[0], page);
+    
+    if (!pageData?.postList?.length) {
+      return {
+        title: "Không tìm thấy nội dung",
+        description: "Nội dung không tồn tại"
+      };
+    }
+
+    const firstPost = pageData.postList?.[0];
+    const titlePageCate = pageData.title || "Công ty Cổ phần Công Nghệ Thiên Lương";
 
     return {
-      title: sttPageId? postList[0]?.title : `${titlePageCate} - Công ty Cổ phần Công Nghệ Thiên Lương` ,
-      description: postList[0]?.metadesc || `${titlePageCate} - Công ty Cổ phần Công Nghệ Thiên Lương`,
-      keywords: postList[0]?.metakey || `${titlePageCate} - Công ty Cổ phần Công Nghệ Thiên Lương`,
+      title: pageData.isPostPage 
+        ? firstPost?.title || titlePageCate 
+        : `${titlePageCate} - Công ty Cổ phần Công Nghệ Thiên Lương`,
+      description: firstPost?.metadesc || titlePageCate,
+      keywords: firstPost?.metakey || titlePageCate,
       openGraph: {
-        title: postList[0]?.title,
-        description: postList[0]?.description,
-        images: [postList[0]?.images],
+        title: firstPost?.title || titlePageCate,
+        description: firstPost?.description || firstPost?.metadesc || titlePageCate,
+        images: firstPost?.images ? [firstPost.images] : [],
         type: "article",
-        url: postList[0]?.urls,
+        url: firstPost?.urls,
       },
       twitter: {
         card: "summary_large_image",
-        title: postList[0]?.title,
-        description: postList[0]?.metadesc || `${titlePageCate} - Công ty Cổ phần Công Nghệ Thiên Lương`,
-        images: [postList[0]?.images],
+        title: firstPost?.title || titlePageCate,
+        description: firstPost?.metadesc || titlePageCate,
+        images: firstPost?.images ? [firstPost.images] : [],
       },
       alternates: {
-        canonical: postList[0]?.urls,
+        canonical: firstPost?.urls,
       },
       robots: {
         index: true,
@@ -99,151 +469,73 @@ export async function generateMetadata(
   } catch (error) {
     console.error("Lỗi khi tạo metadata:", error);
     return {
-      title: "Sản phẩm | Công ty chúng tôi",
-      description: "Thông tin chi tiết về sản phẩm",
+      title: "Trang chủ | Công ty chúng tôi",
+      description: "Thông tin chi tiết"
     };
   }
 }
-// @ts-ignore
 
-export default async function Page(props: {
-  params: Params
-  searchParams: SearchParams
+export default async function Page({
+  params,
+  searchParams
+}: {
+  params: Params;
+  searchParams: SearchParams;
 }) {
-  const params = await props.params
-  const searchParams = await props.searchParams;
-
-  const slug = params.slug;
-  const sp = searchParams;
-  const invalidFiles = ["favicon.ico", "upload", "sitemap.xml"];
-
-  if (slug.length === 1 && invalidFiles.includes(slug[0].toLowerCase())) {
-    return null;
-  }
-
-  const { id, alias } = parseSlug(slug[0]);
-  if (invalidFiles.includes(alias)) {
-    return null;
-  }
+  const { slug } = await params;
+  const sp = await searchParams;
   const page = parseInt((sp?.page as string) || "1");
   const pageSize = parseInt((sp?.pageSize as string) || "9");
 
-  let sttPageId: boolean = false;
-  let postList: Post[] = [];
-  let total = 0;
-  let totalPages = 0;
-  let textTitle;
-  let data;
-  let res;
-  if (id !== null) {
-    const response = await fetchContentBySlugId(alias, id);
-    data = response.data;
-  } else {
-    res = await fetchCateAlias(alias as string, page, pageSize);
-    if (!res || res.Data.length === 0) {
-      redirect('/not-found');
-      return null;
-    }
-  }
-  if (id !== null) {
-    sttPageId = true;
-    // res.Data là 1 Post object
-    if (data?.Data?.correctUrl) {
-      textTitle = data.Data?.article?.parent_cat_name;
-      postList = [data.Data.article];
-      return redirect(data?.Data?.correctUrl);
-    } else {
-      textTitle = data.Data?.parent_cat_name;
-      postList = [data.Data]; // gói vào mảng để dễ xử lý nếu cần
-    }
-  } else {
-    sttPageId = false;
-    postList = res.Data?.list || [];
-    total = res.Data?.total || 0;
-    totalPages = res.Data?.totalPages || 0;
-    textTitle = res.Data?.list[0]?.category_title
-  }
-
-  if (!postList || postList.length === 0) {
+  const pageData = await getPageData(slug[0], page, pageSize);
+  
+  if (!pageData || !pageData.postList?.length) {
     redirect('/not-found');
-    return null;
   }
 
+  const firstPost = pageData.postList?.[0];
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
-    headline: postList[0]?.title,
-    image: [postList[0]?.images],
-    datePublished: postList[0]?.publish_up,
-    dateModified: postList[0]?.modified,
-    author: {
-      "@type": "Person",
-      name: "Nhanmac",
-    },
+    headline: firstPost?.title,
+    image: firstPost?.images ? [firstPost.images] : [],
+    datePublished: firstPost?.publish_up,
+    dateModified: firstPost?.modified,
+    author: { "@type": "Person", name: "Nhanmac" },
     publisher: {
       "@type": "Organization",
-      name: postList[0]?.title,
-      logo: {
-        "@type": "ImageObject",
-        url: "/logo.png",
-        width: 130,
-        height: 60,
-      },
+      name: firstPost?.title || pageData.title,
+      logo: { "@type": "ImageObject", url: "/logo.png", width: 130, height: 60 }
     },
-    description: postList[0]?.metadesc,
+    description: firstPost?.metadesc,
   };
+
   return (
     <main className="mx-auto px-4">
-      {" "}
-      {/* Thêm padding ngang cho mobile */}
       <div className="max-w-full md:max-w-7xl mx-auto mb-6">
-        {" "}
-        {/* Giới hạn max-width trên md trở lên */}
-        {/* Tiêu đề */}
-        <TitlePage text={textTitle} />
+        <TitlePage text={pageData.title} />
         <div className="flex flex-col md:flex-row gap-6">
-          {/* Nội dung chính */}
           <article className="w-full md:w-2/3">
-            {sttPageId ? (
-              postList[0]?.introtext ? (
+            {pageData.isPostPage ? (
+              firstPost?.introtext ? (
                 <Suspense fallback={<Loading />}>
                   <section
                     className="prose max-w-full"
-                    dangerouslySetInnerHTML={{
-                      __html: postList[0].introtext
-                        .replace(
-                          /href="(?:index\.php\/)?[^"]*\/(\d+)-([a-zA-Z0-9\-]+)(?:\.html)?"/g,
-                          (match, id, slug) => `href="${slug}-${id}.html"`
-                        )
-                        .replace(
-                          /src="(upload\/image\/[^"]+)"/g,
-                          (match, src) => `src="https://nhanmac.vn/${src}"`
-                        ).replace(
-                          /(<img[^>]*?)\swidth="[^"]*"/g,
-                          (match, startTag) => `${startTag} width="100%"`
-                        )
-                        .replace(
-                          /<img((?![^>]*width=)[^>]*)>/g,
-                          (match, inside) => `<img${inside} width="100%">`
-                        )
-                        ,
-                    }}
+                    dangerouslySetInnerHTML={{ __html: processPostContent(firstPost.introtext) }}
                   />
                 </Suspense>
               ) : (
                 <p className="text-gray-500">Đang cập nhật nội dung...</p>
               )
             ) : (
-              <>
-                <Suspense fallback={<Loading />}>
-                  <CatePage postList={postList} />
-                  <Pagination
-                    page={page}
-                    totalPages={totalPages}
-                    alias={alias as string}
-                  />
-                </Suspense>
-              </>
+              <Suspense fallback={<Loading />}>
+                <CatePage postList={pageData.postList} />
+                <Pagination
+                  page={page}
+                  totalPages={pageData.totalPages || 0}
+                  alias={pageData.alias}
+                />
+              </Suspense>
             )}
             <Script
               id="news-article-jsonld"
@@ -251,12 +543,8 @@ export default async function Page(props: {
               dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
           </article>
-
-          {/* Sidebar */}
           <aside className="w-full md:w-1/3 flex flex-col gap-6">
-
             <PostNews />
-
           </aside>
         </div>
       </div>

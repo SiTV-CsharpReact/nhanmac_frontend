@@ -1,5 +1,6 @@
 import { fetchCateAlias } from '@/modules/client/menuApi';
 import { Post } from '@/types/contentItem';
+import { renderUrl } from '@/utils/util';
 import Image from 'next/image';
 import Link from 'next/link';
 export default async function NhanVai() {
@@ -22,7 +23,7 @@ export default async function NhanVai() {
                             <div className="mb-2 flex items-center justify-center w-[245px] !h-[195px] overflow-hidden rounded">
                                 {label.urls ? (
                                     <Image
-                                    src={`https://nhanmac.vn/${label.urls}`}
+                                        src={renderUrl(label.urls)}
                                         alt={label.image_desc || "Ảnh sản phẩm"}
                                         width={245}
                                         height={200}

@@ -21,7 +21,7 @@ const TextEditor = ({ editorData, setEditorData, disabled = false, toolbar = 'fu
   return (
     <Editor
     // vo25zsk87945fzmx85atwacm1js3vj6chy45bcvpppbukvky
-    apiKey={`ls9n12mosetj64wsxzgq7wuxnthcj022co290q0x5nw59vdv`}
+    apiKey={`wc8tizgg3cirrsfaetuopcjdo8jq952zj6go5uz8qv3j3oc9`}
     initialValue={content}
     disabled={disabled}
     init={{

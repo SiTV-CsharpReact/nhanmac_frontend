@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Post } from "@/types/contentItem";
 import Image from "next/image";
+import { renderUrl } from "@/utils/util";
 type CatePageProps = {
   postList: Post[];
 };
@@ -24,13 +25,10 @@ export default function CatePage({ postList }: CatePageProps) {
                 <div className="relative w-full aspect-[245/173] h-[173px] bg-gray-100  overflow-hidden rounded-md">
                   {label.urls ? (
                     <Image
-                      src={
-                        label.urls?.startsWith("http")
-                          ? label.urls
-                          : `https://nhanmac.vn/${label.urls}`
-                      }
+                      src={renderUrl(label.urls)}
                       alt={label.image_desc || "Ảnh sản phẩm"}
                       fill
+                      unoptimized
                       style={{ objectFit: "cover" }}
                       sizes="(max-width: 768px) 100vw, 245px"
                       className="rounded-md transition-transform duration-300 ease-in-out group-hover:scale-110"

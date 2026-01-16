@@ -32,7 +32,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
 }) => {
   const { selectOptions, loading } = useCategories();
   const initialValues = {
-    created: [dayjs().subtract(3, "month"), dayjs()], // RangePicker expects array of moments
+    // created: [dayjs().subtract(3, "month"), dayjs()], // RangePicker expects array of moments
     state: 1,
     sectionid: undefined,
     keyword: "",
@@ -42,8 +42,8 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
     form.setFieldsValue(initialValues);
     // Khởi tạo fixedParams với giá trị mặc định (chuyển ngày sang chuỗi DD/MM/YYYY)
     setFixedParams({
-      createdFrom: initialValues.created[0].format(dateFormat),
-      createdTo: initialValues.created[1].format(dateFormat),
+      // createdFrom: initialValues.created[0].format(dateFormat),
+      // createdTo: initialValues.created[1].format(dateFormat),
       state: 1,
       sectionid: undefined,
       keyword: "",
@@ -53,25 +53,17 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
   const search = async () => {
     const values = await form.validateFields();
     // console.log(values)
-    const { created, state, sectionid, keyword } = values;
+    const {  state, sectionid, keyword } = values;
 
-    if (
-      Array.isArray(created) &&
-      created.length === 2 &&
-      dayjs.isDayjs(created[0]) &&
-      dayjs.isDayjs(created[1])
-    ) {
       setFixedParams({
-        createdFrom: created[0].format(dateFormat),
-        createdTo: created[1].format(dateFormat),
+        // createdFrom: created[0].format(dateFormat),
+        // createdTo: created[1].format(dateFormat),
         state,
         sectionid,
         keyword,
       });
       setOnReload && setOnReload(true);
-    } else {
-      message.error("Giá trị ngày không hợp lệ");
-    }
+   
   };
 
   const resetFields = () => {
@@ -84,7 +76,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
   return (
     <Form form={form} layout={"vertical"} initialValues={initialValues}>
       <div className="flex gap-4 justify-center bg-white rounded p-4">
-        <div style={{ width: "100%", maxWidth: "400px" }}>
+        {/* <div style={{ width: "100%", maxWidth: "400px" }}>
           <Form.Item name="created" label="Ngày XB:">
             <RangePicker
               style={{ width: "100%" }}
@@ -95,7 +87,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
               disabledDate={(current) => futureDate(current)}
             />
           </Form.Item>
-        </div>
+        </div> */}
 
         <div style={{ width: "100%", maxWidth: "250px" }}>
           <Form.Item name="state" label="Trạng thái:">

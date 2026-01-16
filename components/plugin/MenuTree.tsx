@@ -17,7 +17,7 @@ export default function MenuTree() {
   const [menus, setMenus] = useState<MenuItem[]>([]);
 
   useEffect(() => {
-    fetch('http://localhost:3600/api/menu') // gọi API từ backend Node.js
+    fetch('https://backend.nhanmac.vn/api/menu') // gọi API từ backend Node.js
       .then(res => res.json())
       .then(data => {
         const menuTree = buildMenuTree(data);

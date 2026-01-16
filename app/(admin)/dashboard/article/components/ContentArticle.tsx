@@ -383,6 +383,7 @@ const ContentArticle: React.FC<typeContentArticle> = ({
                 content={content}
                 editorData={editorData}
                 setEditorData={setEditorData}
+                toolbar="full"
               />
             </Form.Item>
 

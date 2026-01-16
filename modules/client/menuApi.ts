@@ -17,6 +17,7 @@ export const fetchCateAlias = async (
   pageSize: number = 9
 ): Promise<ApiResponse<Post[]>> => {
   try {
+    console.log(alias)
     const url = new URL(`${env.apiUrl}/categories/${alias}`);
     url.searchParams.append("page", page.toString());
     url.searchParams.append("pageSize", pageSize.toString());

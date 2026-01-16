@@ -1,7 +1,7 @@
 import React from "react";
 
 const ViewArticle = (post: any) => {
-  // console.log(post);
+  console.log(post);
   return (
     <>
       <section
