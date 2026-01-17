@@ -1,6 +1,4 @@
 import dayjs from "dayjs";
-import { escape } from "lodash";
-import moment from "moment";
 
 export function getConstantLabel(
     CONSTANT: ConstantItem[],
@@ -30,13 +28,13 @@ export const formatMoney = (x:number, currency) => {
       return "-";
     }
   };
-  export const getBase64 = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-    });
+  export const getBase64 = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
     // utils/buildMenuTree.ts
     interface RawRow {
       section_id: number;
@@ -75,14 +73,26 @@ export const formatMoney = (x:number, currency) => {
     }
 
   // utils/slugUtils.ts
-export function parseSlug(slug: string) {
-  const cleanSlug = slug.replace(/\.html$/, "");
-  const match = cleanSlug.match(/-(\d+)$/); // tìm số cuối cùng sau dấu "-"
-  return {
-    id: match ? Number(match[1]) : null,
-    alias: match ? cleanSlug.substring(0, match.index) : cleanSlug,
-  };
-}
+  export function parseSlug(slug: string) {
+    const cleanSlug = slug.replace(/\.html$/, "");
+    // Ưu tiên ID ở cuối: -600, --600, ---600 ...
+    const endMatch = cleanSlug.match(/-+(\d+)$/);
+    if (endMatch) {
+      return {
+        id: Number(endMatch[1]),
+        alias: cleanSlug.substring(0, endMatch.index),
+      };
+    }
+  
+    // Fallback: lấy số đầu tiên trong slug (377-...)
+    const firstNumberMatch = cleanSlug.match(/(?:^|\/|-)(\d+)-/);
+    return {
+      id: firstNumberMatch
+        ? Number(firstNumberMatch[1] || firstNumberMatch[2])
+        : null,
+      alias: cleanSlug,
+    };
+  }
 
 // export const removeVietnameseTones = (str: string) => {
 //   return str
@@ -170,7 +180,24 @@ export const renderSlugUrl = (url?: string | null) => {
   return removeVietnameseTones(urlLink.toLowerCase());
 };
 
+export const  normalizeSlug=(slug: string | string[]) =>{
 
+  // Nếu slug là string thì xử lý như cũ
+  if (typeof slug === 'string') {
+    return slug.replace(/^\/+/, '').replace(/\/+$/, '');
+  }
+
+  // slug là array - chỉ kiểm tra phần tử CUỐI CÙNG có phải số không
+  const lastPart = slug[slug.length - 1];
+  const hasNumberAtEnd = /\d+/.test(lastPart);
+
+  // Nếu phần tử cuối có số thì lấy từ vị trí đó về cuối, ngược lại lấy toàn bộ
+  const normalizedParts = hasNumberAtEnd 
+    ? slug.slice(slug.lastIndexOf(lastPart)) 
+    : slug;
+
+  return normalizedParts.join('/');
+}
 
 // export const renderUrl = (url: string | null | undefined) => {
 //   let urlLink = '';

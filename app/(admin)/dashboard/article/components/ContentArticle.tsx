@@ -58,7 +58,7 @@ const ContentArticle: React.FC<typeContentArticle> = ({
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState<string>("");
   const [isUpload, setIsUpload] = useState(false);
-  const [urlFile, setUrlFile] = useState({});
+  const [urlFile, setUrlFile] = useState<any>({});
   const [typeSub, setTypeSub] = useState(0);
   const [alias, setAlias] = useState("");
   const [title, setTitle] = useState("");
@@ -92,67 +92,107 @@ const ContentArticle: React.FC<typeContentArticle> = ({
 
   // Hàm upload ảnh
 
+  // const uploadProps = {
+  //   name: "file",
+  //   action: env.uploadUrl,
+  //   accept: "image/*",
+  //   listType: "picture",
+  //   beforeUpload: (file: File) => {
+  //     setIsUpload(true);
+  //     // const type = getExtension(file.name);
+  //     // if (fileType[type] === undefined) {
+  //     //   setFileList((state) => [...state]);
+  //     //   message.error(`${file.name} không đúng định dạng`);
+  //     //   setIsUpload(false);
+  //     //   return false;
+  //     // } else
+
+  //     if (file.size / (1024 * 1024) > 5) {
+  //       setFileList((state) => [...state]);
+  //       message.error("Ảnh vượt quá dung lượng cho phép (5Mb)");
+  //       setIsUpload(false);
+  //       return false;
+  //     } else {
+  //       setFileList((state) => [...state, file]);
+  //       return true;
+  //     }
+  //   },
+  //   onRemove: (file: File) => {
+  //     if (fileList.some((item) => item.uid === file?.uid)) {
+  //       setFileList((fileList) =>
+  //         fileList.filter((item) => item.uid !== file.uid)
+  //       );
+  //       setUrlFile({});
+  //       setIsUpload(false);
+  //       setImageUrl(null);
+  //       return true;
+  //     } else {
+  //       return false;
+  //     }
+  //   },
+  //   onChange(info) {
+  //     if (info.file.status === "done" && info?.file?.response != "") {
+  //       setFileList(info.fileList);
+  //       setUrlFile({
+  //         pictureName: info?.file?.name,
+  //         pictureUrl: info?.file?.response?.Data?.imageUrl,
+  //       });
+  //       setIsUpload(true);
+  //     }
+
+  //     if (info.file.status === "error") {
+  //       message.error(
+  //         `${info.file.name} upload không thành công bạn hãy thử lại`
+  //       );
+  //       setFileList((fileList) =>
+  //         fileList.filter((item) => item.uid !== info.file.uid)
+  //       );
+  //       setIsUpload(false);
+  //     }
+  //   },
+  //   fileList,
+  // };
   const uploadProps = {
     name: "file",
     action: env.uploadUrl,
     accept: "image/*",
     listType: "picture",
-    beforeUpload: (file: File) => {
+    beforeUpload: (file: File, fileList: UploadFile[]) => {
       setIsUpload(true);
-      // const type = getExtension(file.name);
-      // if (fileType[type] === undefined) {
-      //   setFileList((state) => [...state]);
-      //   message.error(`${file.name} không đúng định dạng`);
-      //   setIsUpload(false);
-      //   return false;
-      // } else
-
       if (file.size / (1024 * 1024) > 5) {
-        setFileList((state) => [...state]);
         message.error("Ảnh vượt quá dung lượng cho phép (5Mb)");
         setIsUpload(false);
         return false;
-      } else {
-        setFileList((state) => [...state, file]);
-        return true;
       }
+      // Không add manual ở đây nữa, để onChange xử lý
+      return true;
     },
-    onRemove: (file: File) => {
-      if (fileList.some((item) => item.uid === file?.uid)) {
-        setFileList((fileList) =>
-          fileList.filter((item) => item.uid !== file.uid)
-        );
-        setUrlFile({});
-        setIsUpload(false);
-        setImageUrl(null);
-        return true;
-      } else {
-        return false;
-      }
-    },
-    onChange(info) {
-      if (info.file.status === "done" && info?.file?.response != "") {
-        setFileList(info.fileList);
+    onChange: (info:any) => {
+      const { file, fileList: newFileList } = info;
+      setFileList(newFileList);
+  
+      if (file.status === "done" && file?.response != "") {
         setUrlFile({
-          pictureName: info?.file?.name,
-          pictureUrl: info?.file?.response?.Data?.imageUrl,
+          pictureName: file?.name,
+          pictureUrl: file?.response?.Data?.imageUrl,
         });
+      } else if (file.status === "error") {
+        message.error(`${file.name} upload không thành công bạn hãy thử lại`);
+        setIsUpload(false);
+      } else if (file.status === "uploading") {
         setIsUpload(true);
       }
-
-      if (info.file.status === "error") {
-        message.error(
-          `${info.file.name} upload không thành công bạn hãy thử lại`
-        );
-        setFileList((fileList) =>
-          fileList.filter((item) => item.uid !== info.file.uid)
-        );
-        setIsUpload(false);
-      }
+    },
+    onRemove: (file: UploadFile) => {
+      setFileList((prev) => prev.filter((item) => item.uid !== file.uid));
+      setUrlFile({});
+      setIsUpload(false);
+      setImageUrl(null);
+      return true;
     },
     fileList,
   };
-
+  
 
   const reloadPage = () => {
     setTypeModal({
@@ -371,13 +411,6 @@ const ContentArticle: React.FC<typeContentArticle> = ({
             <Form.Item
               label="Nội dung"
               name="content"
-              rules={[
-                {
-                  // required: true,
-                  max: 5000,
-                  message: "Tối đa 5000 kí tự",
-                },
-              ]}
             >
               <TextEditor
                 content={content}

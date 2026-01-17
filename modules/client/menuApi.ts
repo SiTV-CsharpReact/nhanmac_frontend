@@ -90,9 +90,6 @@ export const fetchContentBySlugId = async (
 
     const data: ApiResponse<Post> = await response.json();
 
-    if (data.Code !== 200) {
-      throw new Error(data.Message || "Có lỗi xảy ra");
-    }
     // Trả về dữ liệu bài viết bình thường
     return { data };
   } catch (error: any) {

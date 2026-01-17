@@ -50,6 +50,7 @@ export default function CategoryTable() {
   const [categories, setCategories] = useState<Categories[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [loadingPage,setLoadingPage] = useState(false);
   const [form] = Form.useForm();
   const { selectOptions, loading } = useCategories();
   const [alias, setAlias] = useState("");
@@ -62,14 +63,16 @@ export default function CategoryTable() {
   }, []);
 
   const fetchCategories = async () => {
+    setLoadingPage(true);
     try {
       const data = await categoryApi.getAllSection();
       setCategories(data?.Data);
     } catch (error: any) {
-      message.error(error.message);
+      message.error(error.message || "Lỗi tải danh mục");
+    } finally {
+      setLoadingPage(false);
     }
   };
-
   const showModal = async (category?: Category) => {
     if (category) {
       setEditingCategory(category);
@@ -212,6 +215,7 @@ export default function CategoryTable() {
   ];
 
   return (
+    <Spin spinning={loadingPage}>
     <div className="pl-4">
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16, background: 'white', padding: 6, borderRadius: 5 }}>
         <TitlePageAdmin text={'Quản lý chuyên mục'} />
@@ -306,5 +310,6 @@ export default function CategoryTable() {
         </Form>
       </Modal>
     </div>
+    </Spin>
   );
 }

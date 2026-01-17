@@ -96,6 +96,8 @@ const Page: React.FC = () => {
       pageSize: 10,
     },
   });
+  const [loadingDetail, setLoadingDetail] = useState(false);
+
   const baseUrl = window.location.origin;  
   // Reset form khi mở modal
   useEffect(() => {
@@ -150,15 +152,20 @@ const Page: React.FC = () => {
   // Hàm lấy chi tiết bài viết
   const fetchDetail = async (id: number) => {
     try {
+      setLoadingDetail(true); // bật loading
       const result = await fetchContentId(id);
+  
       if (result.Code === 200) {
         setDataDetail(result.Data);
-
       }
     } catch (error) {
       // Error đã được xử lý trong API
+    } finally {
+      setLoadingDetail(false); // tắt loading dù success hay error
     }
   };
+
+  
 
   // Hàm xóa bài viết
   const handleDeleteContent = async (id: number) => {
@@ -375,6 +382,7 @@ const Page: React.FC = () => {
         <CustomModal
           header={`${isSttModal?.typeModal == 0 ? `Chi tiết` : isSttModal?.typeModal == 1 ? `Thêm mới` : `Chỉnh sửa`
             } bài viết`}
+          spinning={loadingDetail}
           onCancel={() => setIsSttModal({ typeModal: 0, openModal: false })} // Xử lý đóng modal
           open={isSttModal?.openModal}
           width={1200}
