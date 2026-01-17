@@ -69,11 +69,12 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  console.log("React version:", React.version);
   return (
-   
-    <html lang="en"  className={robotoCondensed.className}>
-      <body>{children}</body>
+
+    <html lang="en">
+      <body className={robotoCondensed.className}>
+        {children}
+      </body>
     </html>
   );
 }
