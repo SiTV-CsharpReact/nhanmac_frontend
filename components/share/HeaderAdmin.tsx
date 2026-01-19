@@ -24,7 +24,7 @@ const handleChangePassword = async (dataVal: { username: string; oldPassword: st
   try {
     // Gọi API đổi mật khẩu thực tế
      const data =  await changePassword(dataVal);
-     console.log(data)
+    //  console.log(data)
   data?.Code !== 200
   ? notification.error({ message: data?.Message || 'Có lỗi xảy ra' })
   : notification.success({ message: data?.Message || 'Thành công' });

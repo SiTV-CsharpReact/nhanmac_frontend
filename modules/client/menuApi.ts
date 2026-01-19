@@ -16,55 +16,71 @@ export const fetchCateAlias = async (
   page: number = 1,
   pageSize: number = 9
 ): Promise<ApiResponse<Post[]>> => {
-  try {
-    console.log(alias)
-    const url = new URL(`${env.apiUrl}/categories/${alias}`);
-    url.searchParams.append("page", page.toString());
-    url.searchParams.append("pageSize", pageSize.toString());
+  const url = new URL(`${env.apiUrl}/categories/${alias}`);
+  url.searchParams.append("page", page.toString());
+  url.searchParams.append("pageSize", pageSize.toString());
 
+  try {
     const response = await fetch(url.toString(), {
-      // cache: "no-store", 
-      next: {
-      revalidate: 60, // Cache trong 60 giây
-    }, });
+      next: { revalidate: 60 },
+    });
+
+    const contentType = response.headers.get("content-type") || "";
+
+    if (!response.ok) {
+      console.error("HTTP error:", response.status);
+      return {
+        Code: response.status,
+        Message: "HTTP error",
+        Data: [],
+      };
+    }
+
+    if (!contentType.includes("application/json")) {
+      const text = await response.text();
+      console.error("API trả HTML:", text);
+      return {
+        Code: 500,
+        Message: "Invalid JSON response",
+        Data: [],
+      };
+    }
 
     const data: ApiResponse<Post[]> = await response.json();
+
+    if (data.Code !== 200) {
+      console.warn("API logic error:", data.Message);
+      data.Data = [];
+    }
+
+    return data;
+  } catch (err) {
+    console.error("fetchCateAlias exception:", err);
+    return {
+      Code: 500,
+      Message: "Fetch failed",
+      Data: [],
+    };
+  }
+};
+
+export const fetchCate = async (alias: string): Promise<ApiResponse<Post[]>> => {
+  try {
+
+    const response = await fetch(`${env.apiUrl}/categories/${alias}`, {
+      next: {
+        revalidate: 60, // Cache trong 60 giây
+      },
+    });
+    const data: ApiResponse<Post[]> = await response.json();
+    // console.log(data)
     if (data.Code !== 200) {
       data.Data = [];
       // Bạn có thể log lỗi hoặc xử lý thông báo ở đây nếu muốn
       console.warn('API trả về lỗi:', data.Message || 'Có lỗi xảy ra');
-     
-    }
-    return data;
-  } catch (error: any) {
-    if (typeof window !== "undefined") {
-      notification.error({
-        message: "Lỗi",
-        description: error.message || "Không thể lấy bài viết",
-      });
-    }
-    throw error;
-  }
-};
 
-
-export const fetchCate = async (alias: string): Promise<ApiResponse<Post[]>> => {
-  try {
- 
-    const response = await fetch(`${env.apiUrl}/categories/${alias}`,{
-      next: {
-        revalidate: 60, // Cache trong 60 giây
-      },
-  });
-    const data: ApiResponse<Post[]> = await response.json();
-    // console.log(data)
-    if (data.Code !== 200) {
-       data.Data = [];
-      // Bạn có thể log lỗi hoặc xử lý thông báo ở đây nếu muốn
-      console.warn('API trả về lỗi:', data.Message || 'Có lỗi xảy ra');
-     
     }
-    
+
     return data;
   } catch (error: any) {
     if (typeof window !== "undefined") {
@@ -80,25 +96,40 @@ export const fetchCate = async (alias: string): Promise<ApiResponse<Post[]>> => 
 export const fetchContentBySlugId = async (
   slug: string,
   id: number
-): Promise<{ data?: ApiResponse<Post>; redirectUrl?: string }> => {
+): Promise<{ data?: ApiResponse<Post> }> => {
+  const url = `${env.apiUrl}/contents/${slug}-${id}.html`;
+
   try {
-    const response = await fetch(`${env.apiUrl}/contents/${slug}-${id}.html`, {
+    const response = await fetch(url, {
       next: {
         revalidate: 60,
       },
     });
 
-    const data: ApiResponse<Post> = await response.json();
+    // ❗ BẮT BUỘC kiểm tra status
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
 
-    // Trả về dữ liệu bài viết bình thường
+    const contentType = response.headers.get("content-type") || "";
+
+    // ❗ BẮT BUỘC kiểm tra JSON
+    if (!contentType.includes("application/json")) {
+      throw new Error("API không trả JSON");
+    }
+
+    const data: ApiResponse<Post> = await response.json();
     return { data };
   } catch (error: any) {
+    // ❗ notification chỉ chạy ở client
     if (typeof window !== "undefined") {
       notification.error({
         message: "Lỗi",
         description: error.message || "Không thể lấy chi tiết bài viết",
       });
     }
+
+    // ⚠️ Quan trọng: throw lại để page xử lý notFound / error boundary
     throw error;
   }
 };

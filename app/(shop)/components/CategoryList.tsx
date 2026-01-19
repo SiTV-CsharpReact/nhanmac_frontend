@@ -33,7 +33,7 @@ const CategoryList = async ({ categoryKey, bgWhite }: Props) => {
                     <div className="h-1 bg-[#2F80ED] mx-auto w-1/2 max-w-[255px] mb-5 sm:w-[255px]"></div>
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                         {postList.map((label, i) => {
-                            console.log(label.urls)
+                            // console.log(label.urls)
                             return (
                                 <Link href={`${label.alias + label.id}.html`} key={`${label.id}-${i}`}
                                     className="group bg-white shadow-custom rounded  flex flex-col items-center overflow-hidden cursor-pointer"

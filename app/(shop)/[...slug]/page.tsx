@@ -1,16 +1,15 @@
-
 import PostNews from "@/components/share/PostNews";
 import TitlePage from "@/components/share/TitlePage";
 import { Post } from "@/types/contentItem";
 import { fetchCateAlias, fetchContentBySlugId } from "@/modules/client/menuApi";
-import { parseSlug, renderSlugUrl , normalizeSlug} from "../../../utils/util";
+import { parseSlug, renderSlugUrl, normalizeSlug } from "../../../utils/util";
 import Pagination from "./components/Pagination";
 import CatePage from "./components/CatePage";
 import { Metadata } from "next";
 import Script from "next/script";
 import { Suspense } from "react";
 import Loading from "@/components/share/Loading";
-import { notFound} from 'next/navigation'; 
+import { notFound } from 'next/navigation';
 import { permanentRedirect } from 'next/navigation'
 type Params = Promise<{ slug: string }>;
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -29,7 +28,7 @@ async function getPageData(
   slug: string,
   page: number = 1,
   pageSize: number = 9,
-  callRedirect:boolean = true,
+  callRedirect: boolean = true,
 ): Promise<PageData | null> {
   //  console.log(slug,'slug xịn')
   const { id, alias } = parseSlug(slug);
@@ -42,32 +41,32 @@ async function getPageData(
   if (id !== null) {
     // Trang bài viết chi tiết
     const { data } = await fetchContentBySlugId(alias, id);
-    // console.log(data,'data')
-    if(callRedirect){
-      if(data?.Code == 404){
-        notFound()
-      }
-      if (data?.Data?.correctUrl) {
-        permanentRedirect(data.Data.correctUrl);
-        // redirect(data.Data.correctUrl, { permanent: true });
-      }
+    // console.log(alias,id, 'data')
+    if (callRedirect && data?.Code === 404) {
+      notFound();
     }
 
-    const post = data?.Data || data?.data?.article || ({} as Post);
+    if (callRedirect && data?.Data?.correctUrl) {
+      permanentRedirect(data.Data.correctUrl);
+    }
+
+    const post = data?.Data 
+    // || data?.data?.article || ({} as Post);
+    // console.log(post,'post tesst')
     return {
       isPostPage: true,
-      postList: [post],
+      postList: post ? [post] : [], // 👈 bọc thành mảng
       title: data?.Data?.parent_cat_name || "",
       alias
     };
   } else {
     // Trang danh mục
     const res = await fetchCateAlias(alias, page, pageSize);
-    
+
     if (!res?.Data?.list?.length) {
       return null;
     }
-    
+
     return {
       isPostPage: false,
       postList: res.Data.list,
@@ -82,7 +81,7 @@ async function getPageData(
 // Xử lý nội dung bài viết
 function processPostContent(content?: string): string {
   if (!content) return "";
-  
+
   return content
     .replace(/href="(?:index\.php\/)?[^"]*\/(\d+)-([a-zA-Z0-9\-]+)(?:\.html)?"/g, (match, id, slug) => `href="${slug}-${id}.html"`)
     .replace(/src="upload\/image\/([^"]+)"/g, (match, filename) => `src="${renderSlugUrl(filename)}"`)
@@ -105,9 +104,9 @@ export async function generateMetadata({
     const sp = await searchParams;
     const page = parseInt((sp?.page as string) || "1");
     const pageSize = parseInt((sp?.pageSize as string) || "9");
-    
-    const pageData = await getPageData(normalizeS, page,pageSize,false);
-    
+
+    const pageData = await getPageData(normalizeS, page, pageSize, false);
+
     if (!pageData?.postList?.length) {
       return {
         title: "Không tìm thấy nội dung",
@@ -117,16 +116,16 @@ export async function generateMetadata({
 
     const firstPost = pageData.postList?.[0];
     const titlePageCate = pageData.title || "Công ty Cổ phần Công Nghệ Thiên Lương";
-   
-    const canonicalUrl = pageData.isPostPage 
-    ? `https://nhanmac.vn/${alias}-${id}.html`
-    : page > 1
-      ? `https://nhanmac.vn/${pageData.alias}?page=${page}`
-      : `https://nhanmac.vn/${pageData.alias}`;
-    
+
+    const canonicalUrl = pageData.isPostPage
+      ? `https://nhanmac.vn/${alias}-${id}.html`
+      : page > 1
+        ? `https://nhanmac.vn/${pageData.alias}?page=${page}`
+        : `https://nhanmac.vn/${pageData.alias}`;
+
     return {
-      title: pageData.isPostPage 
-        ? firstPost?.title || titlePageCate 
+      title: pageData.isPostPage
+        ? firstPost?.title || titlePageCate
         : `${titlePageCate} - Công ty Cổ phần Công Nghệ Thiên Lương`,
       description: firstPost?.metadesc || titlePageCate,
       keywords: firstPost?.metakey || titlePageCate,
@@ -181,12 +180,13 @@ export default async function Page({
   const pageSize = parseInt((sp?.pageSize as string) || "9");
 
   const pageData = await getPageData(normalizeSlug(slug), page, pageSize);
-  
+  // console.log(pageData?.postList, 'pageData New')
   if (!pageData || !pageData.postList?.length) {
-    notFound()  
+    notFound()
   }
 
   const firstPost = pageData.postList?.[0];
+  // console.log(firstPost, 'pageDfirstPostata')
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
@@ -202,7 +202,7 @@ export default async function Page({
     },
     description: firstPost?.metadesc,
   };
-
+  // console.log(pageData.isPostPage ,firstPost?.introtext)
   return (
     <main className="mx-auto px-4">
       <div className="max-w-full md:max-w-7xl mx-auto mb-6">
@@ -211,22 +211,20 @@ export default async function Page({
           <article className="w-full md:w-2/3">
             {pageData.isPostPage ? (
               firstPost?.introtext ? (
-                <Suspense fallback={<Loading />}>
-                  <section
-                    className="prose max-w-full"
-                    dangerouslySetInnerHTML={{ __html: processPostContent(firstPost.introtext) }}
-                  />
-                </Suspense>
+                <section
+                  className="prose max-w-full"
+                  dangerouslySetInnerHTML={{ __html: processPostContent(firstPost.introtext) }}
+                />
               ) : (
                 <p className="text-gray-500">Đang cập nhật nội dung...</p>
               )
             ) : (
               <Suspense fallback={<Loading />}>
-                <CatePage postList={pageData.postList} />
+                <CatePage postList={pageData?.postList} />
                 <Pagination
                   page={page}
-                  totalPages={pageData.totalPages || 0}
-                  alias={pageData.alias}
+                  totalPages={pageData?.totalPages || 0}
+                  alias={pageData?.alias}
                 />
               </Suspense>
             )}
@@ -237,7 +235,10 @@ export default async function Page({
             />
           </article>
           <aside className="w-full md:w-1/3 flex flex-col gap-6">
-            <PostNews />
+            <Suspense fallback={<Loading />}>
+              {/* @ts-expect-error Async Server Component */}
+              <PostNews />
+            </Suspense>
           </aside>
         </div>
       </div>

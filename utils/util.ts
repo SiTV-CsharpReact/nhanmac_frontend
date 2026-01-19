@@ -146,7 +146,7 @@ export const renderUrl = (url: string | null | undefined) =>{
 //   return removeVietnameseTones(urlLink)
 // }
 export const renderSlugUrl = (url?: string | null) => {
-  console.log(url)
+  // console.log(url)
   if (!url) return "";
 
   let urlLink = url.trim();

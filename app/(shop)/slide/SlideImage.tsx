@@ -18,7 +18,7 @@ const SlideImage = () => {
         if (response.Code === 200 && response.Data) {
           setSlides(response.Data);
         }
-        console.log(response.Data,"zpo")
+        // console.log(response.Data,"zpo")
       } catch (error) {
         console.error("Lỗi khi tải slides:", error);
       } finally {
@@ -62,7 +62,7 @@ const SlideImage = () => {
         <Carousel {...settings} className="mb-2.5">
           {slides.slice(0, 3).map((slide) => (
             // console.log(`https://nhanmac.vn/${slide.urls}`),  
-             console.log(renderUrl(slide?.urls)),
+            //  console.log(renderUrl(slide?.urls)),
             <div
               key={slide.id}
               role="group"

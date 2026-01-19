@@ -2,6 +2,7 @@ import React from "react";
 import Image from "next/image"; // Bắt buộc với Next.js
 // import Menu from "./Menu";
 import MenuTest from "./Menutest";
+import MenuServer from "./MenuNext";
 
 // Tách số online thành Client Component để tránh hydration mismatch
 const OnlineCount = () => {
@@ -105,7 +106,9 @@ const Header = () => {
         </div>
       </address>
       <nav aria-label="Main menu">
-        <MenuTest />
+        {/* <MenuTest /> */}
+        {/* @ts-expect-error Async Server Component */}
+        <MenuServer/>
       </nav>
     </header>
   );
