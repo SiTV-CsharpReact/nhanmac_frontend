@@ -98,7 +98,7 @@ export const fetchContentBySlugId = async (
   id: number
 ): Promise<{ data?: ApiResponse<Post> }> => {
   const url = `${env.apiUrl}/contents/${slug}-${id}.html`;
-
+  console.log(url)
   try {
     const response = await fetch(url, {
       next: {
