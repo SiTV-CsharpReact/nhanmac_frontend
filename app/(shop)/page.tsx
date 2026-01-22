@@ -112,7 +112,7 @@ export default function Home() {
         </h1>
 
         {/* 2. Thông tin công ty & số liệu */}
-        <section className="grid grid-cols-1 md:grid-cols-12 mt-6 px-1 md:px-20 gap-1 md:gap-0">
+        <section className="grid grid-cols-1 lg:grid-cols-12 mt-6 px-1 md:px-20 gap-1 md:gap-0">
           <div className="flex flex-col gap-1 text-[#2F80ED] col-span-1 md:col-span-4 md:gap-6">
             {/* Kinh nghiệm */}
             <div className="flex items-center gap-4">

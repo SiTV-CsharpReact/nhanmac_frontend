@@ -1,247 +1,287 @@
+import Loading from "@/components/share/Loading";
 import PostNews from "@/components/share/PostNews";
 import TitlePage from "@/components/share/TitlePage";
-import { Post } from "@/types/contentItem";
 import { fetchCateAlias, fetchContentBySlugId } from "@/modules/client/menuApi";
-import { parseSlug, renderSlugUrl, normalizeSlug } from "../../../utils/util";
-import Pagination from "./components/Pagination";
-import CatePage from "./components/CatePage";
+import { Post } from "@/types/contentItem";
 import { Metadata } from "next";
+import { notFound, permanentRedirect } from "next/navigation";
 import Script from "next/script";
 import { Suspense } from "react";
-import Loading from "@/components/share/Loading";
-import { notFound } from 'next/navigation';
-import { permanentRedirect } from 'next/navigation'
-type Params = Promise<{ slug: string }>;
-type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
+import {
+  extractIdAndSlug,
+  normalizeSlug,
+  renderSlugUrl,
+} from "../../../utils/util";
+import CatePage from "./components/CatePage";
+import Pagination from "./components/Pagination";
+
+/* ================= TYPES ================= */
+
+type Params = {
+    slug: string[];
+};
+
+type SearchParams = {
+    [key: string]: string | string[] | undefined;
+};
 
 interface PageData {
-  isPostPage: boolean;
-  postList: Post[];
-  title: string;
-  total?: number;
-  totalPages?: number;
-  alias: string;
+    isPostPage: boolean;
+    postList: Post[];
+    title: string;
+    alias: string;
+    canonicalSlug?: string;
+    total?: number;
+    totalPages?: number;
 }
 
-// Helper function lấy dữ liệu trang
-async function getPageData(
-  slug: string,
-  page: number = 1,
-  pageSize: number = 9,
-  callRedirect: boolean = true,
-): Promise<PageData | null> {
-  //  console.log(slug,'slug xịn')
-  const { id, alias } = parseSlug(slug);
-  const invalidFiles = ["favicon.ico", "upload", "sitemap.xml"];
+/* ================= DATA ================= */
 
-  if (invalidFiles.includes(slug.toLowerCase()) || invalidFiles.includes(alias)) {
+async function getPageData(
+  slugParam: string[],
+  page = 1,
+  pageSize = 9,
+): Promise<PageData | null> {
+  const lastSlug = normalizeSlug(slugParam.at(-1)!);
+
+  // chặn file hệ thống
+  if (["favicon.ico", "sitemap.xml", "robots.txt"].includes(lastSlug)) {
     return null;
   }
 
-  if (id !== null) {
-    // Trang bài viết chi tiết
+  const postResult = extractIdAndSlug(lastSlug);
+
+  /* ========= POST DETAIL ========= */
+  if (postResult) {
+    const { id, alias } = postResult;
+
     const { data } = await fetchContentBySlugId(alias, id);
-    // console.log(alias,id, 'data')
-    if (callRedirect && data?.Code === 404) {
-      notFound();
-    }
+    if (!data || data.Code === 404) return null;
 
-    if (callRedirect && data?.Data?.correctUrl) {
-      permanentRedirect(data.Data.correctUrl);
-    }
+    const post = data.Data;
 
-    const post = data?.Data 
-    // || data?.data?.article || ({} as Post);
-    // console.log(post,'post tesst')
     return {
       isPostPage: true,
-      postList: post ? [post] : [], // 👈 bọc thành mảng
-      title: data?.Data?.parent_cat_name || "",
-      alias
-    };
-  } else {
-    // Trang danh mục
-    const res = await fetchCateAlias(alias, page, pageSize);
-
-    if (!res?.Data?.list?.length) {
-      return null;
-    }
-
-    return {
-      isPostPage: false,
-      postList: res.Data.list,
-      title: res.Data.list?.[0]?.category_title || "",
-      total: res.Data.total || 0,
-      totalPages: res.Data.totalPages || 0,
-      alias
+      postList: [post],
+      title: post.parent_cat_name || "",
+      alias,
+      canonicalSlug: `${post.alias}-${post.id}.html`,
     };
   }
+
+  /* ========= CATEGORY ========= */
+  const res = await fetchCateAlias(lastSlug, page, pageSize);
+  if (!res?.Data?.list?.length) return null;
+
+  return {
+    isPostPage: false,
+    postList: res.Data.list,
+    title: res.Data.list[0]?.category_title || "",
+    alias: lastSlug, // ✅ FIX Ở ĐÂY
+    total: res.Data.total,
+    totalPages: res.Data.totalPages,
+  };
 }
 
-// Xử lý nội dung bài viết
+
+/* ================= CONTENT PROCESS ================= */
+
 function processPostContent(content?: string): string {
-  if (!content) return "";
+    if (!content) return "";
 
-  return content
-    .replace(/href="(?:index\.php\/)?[^"]*\/(\d+)-([a-zA-Z0-9\-]+)(?:\.html)?"/g, (match, id, slug) => `href="${slug}-${id}.html"`)
-    .replace(/src="upload\/image\/([^"]+)"/g, (match, filename) => `src="${renderSlugUrl(filename)}"`)
-    .replace(/(<img[^>]*?)\swidth="[^"]*"/g, '$1 width="100%"')
-    .replace(/<img((?![^>]*width=)[^>]*)>/g, `<img$1 width="100%">`);
+    return (
+        content
+            // Joomla legacy links → flat SEO link
+            .replace(
+                /href="index\.php\/[^"]*?\/(\d+)-([^"/]+)"/g,
+                (_, id, slug) => `href="/${slug}-${id}.html"`,
+            )
+            // thiếu .html
+            .replace(
+                /href="([^"/]+)-(\d+)"/g,
+                (_, slug, id) => `href="/${slug}-${id}.html"`,
+            )
+            // image path
+            .replace(
+                /src="upload\/image\/([^"]+)"/g,
+                (_, file) => `src="${renderSlugUrl(file)}"`,
+            )
+            // img responsive
+            .replace(/(<img[^>]*?)\swidth="[^"]*"/g, '$1 width="100%"')
+            .replace(/<img((?![^>]*width=)[^>]*)>/g, '<img$1 width="100%">')
+    );
 }
+
+/* ================= METADATA ================= */
 
 export async function generateMetadata({
-  params,
-  searchParams
+    params,
+    searchParams,
 }: {
-  params: Params;
-  searchParams: SearchParams;
+    params: Params;
+    searchParams: SearchParams;
 }): Promise<Metadata> {
-  try {
-    const { slug } = await params;
-    const normalizeS = normalizeSlug(slug);
-    // console.log(slug,'slug xịn 1')
-    const { id, alias } = parseSlug(normalizeS);
-    const sp = await searchParams;
-    const page = parseInt((sp?.page as string) || "1");
-    const pageSize = parseInt((sp?.pageSize as string) || "9");
+    const page = Number(searchParams.page ?? 1);
+    const pageSize = Number(searchParams.pageSize ?? 9);
 
-    const pageData = await getPageData(normalizeS, page, pageSize, false);
+    const data = await getPageData(params.slug, page, pageSize);
+    if (!data) return { title: "Không tìm thấy nội dung" };
 
-    if (!pageData?.postList?.length) {
-      return {
-        title: "Không tìm thấy nội dung",
-        description: "Nội dung không tồn tại"
-      };
-    }
-
-    const firstPost = pageData.postList?.[0];
-    const titlePageCate = pageData.title || "Công ty Cổ phần Công Nghệ Thiên Lương";
-
-    const canonicalUrl = pageData.isPostPage
-      ? `https://nhanmac.vn/${alias}-${id}.html`
-      : page > 1
-        ? `https://nhanmac.vn/${pageData.alias}?page=${page}`
-        : `https://nhanmac.vn/${pageData.alias}`;
+    const post = data.postList[0];
 
     return {
-      title: pageData.isPostPage
-        ? firstPost?.title || titlePageCate
-        : `${titlePageCate} - Công ty Cổ phần Công Nghệ Thiên Lương`,
-      description: firstPost?.metadesc || titlePageCate,
-      keywords: firstPost?.metakey || titlePageCate,
-      openGraph: {
-        title: firstPost?.title || titlePageCate,
-        description: firstPost?.description || firstPost?.metadesc || titlePageCate,
-        images: firstPost?.images ? [firstPost.images] : [],
-        type: "article",
-        url: `${alias}-${id}.html`,
-      },
-      twitter: {
-        card: "summary_large_image",
-        title: firstPost?.title || titlePageCate,
-        description: firstPost?.metadesc || titlePageCate,
-        images: firstPost?.images ? [firstPost.images] : [],
-      },
-      alternates: {
-        canonical: canonicalUrl,
-      },
-      robots: {
-        index: true,
-        follow: true,
-      },
-      icons: {
-        icon: "https://nhanmac.vn/_next/image?url=/images/favicon.ico&w=64&q=75",
-        apple: [
-          { url: "https://nhanmac.vn/_next/image?url=/images/favicon.ico&w=64&q=75", sizes: "72x72" },
-          { url: "https://nhanmac.vn/_next/image?url=/images/favicon.ico&w=64&q=75", sizes: "114x114" },
-          { url: "https://nhanmac.vn/_next/image?url=/images/favicon.ico&w=64&q=75", sizes: "57x57" },
-        ],
-      },
+        title: data.isPostPage
+            ? post.title
+            : `${data.title} - Công ty Cổ phần Công Nghệ Thiên Lương`,
+
+        description: post?.metadesc || data.title,
+
+        keywords: post?.metakey || data.title,
+
+        alternates: {
+            canonical: data.isPostPage
+                ? `https://nhanmac.vn/${data.canonicalSlug}`
+                : `https://nhanmac.vn/${data.alias}`,
+        },
+
+        openGraph: data.isPostPage
+            ? {
+                  type: "article",
+                  title: post.title,
+                  description: post.description || post.metadesc || data.title,
+                  url: `https://nhanmac.vn/${data.canonicalSlug}`,
+                  siteName: "Nhanmac",
+                  images: post.images
+                      ? [post.images]
+                      : [
+                            {
+                                url: "https://nhanmac.vn/images/og-default.jpg",
+                                width: 1200,
+                                height: 630,
+                            },
+                        ],
+              }
+            : {
+                  type: "website",
+                  title: data.title,
+                  description: data.title,
+                  url: `https://nhanmac.vn/${data.alias}`,
+                  siteName: "Nhanmac",
+              },
+
+        twitter: {
+            card: "summary_large_image",
+            title: post?.title || data.title,
+            description: post?.metadesc || data.title,
+            images: post?.images ? [post.images] : [],
+        },
+
+        robots: {
+            index: true,
+            follow: true,
+            googleBot: {
+                index: true,
+                follow: true,
+                "max-image-preview": "large",
+                "max-snippet": -1,
+                "max-video-preview": -1,
+            },
+        },
+
+        // icons: {
+        //   icon: "/images/favicon.ico",
+        //   apple: [
+        //     { url: "/images/favicon.ico", sizes: "72x72" },
+        //     { url: "/images/favicon.ico", sizes: "114x114" },
+        //     { url: "/images/favicon.ico", sizes: "57x57" },
+        //   ],
+        // },
     };
-  } catch (error) {
-    console.error("Lỗi khi tạo metadata:", error);
-    return {
-      title: "Trang chủ | Công ty chúng tôi",
-      description: "Thông tin chi tiết"
-    };
-  }
 }
 
+/* ================= PAGE ================= */
+
 export default async function Page({
-  params,
-  searchParams
+    params,
+    searchParams,
 }: {
-  params: Params;
-  searchParams: SearchParams;
+    params: Params;
+    searchParams: SearchParams;
 }) {
-  const { slug } = await params;
-  const sp = await searchParams;
-  const page = parseInt((sp?.page as string) || "1");
-  const pageSize = parseInt((sp?.pageSize as string) || "9");
+    const page = Number(searchParams.page ?? 1);
+    const pageSize = Number(searchParams.pageSize ?? 9);
 
-  const pageData = await getPageData(normalizeSlug(slug), page, pageSize);
-  // console.log(pageData?.postList, 'pageData New')
-  if (!pageData || !pageData.postList?.length) {
-    notFound()
-  }
+    const pageData = await getPageData(params.slug, page, pageSize);
+    if (!pageData) notFound();
 
-  const firstPost = pageData.postList?.[0];
-  // console.log(firstPost, 'pageDfirstPostata')
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "NewsArticle",
-    headline: firstPost?.title,
-    image: firstPost?.images ? [firstPost.images] : [],
-    datePublished: firstPost?.publish_up,
-    dateModified: firstPost?.modified,
-    author: { "@type": "Person", name: "Nhanmac" },
-    publisher: {
-      "@type": "Organization",
-      name: firstPost?.title || pageData.title,
-      logo: { "@type": "ImageObject", url: "/logo.png", width: 130, height: 60 }
-    },
-    description: firstPost?.metadesc,
-  };
-  // console.log(pageData.isPostPage ,firstPost?.introtext)
-  return (
-    <main className="mx-auto px-4">
-      <div className="max-w-full md:max-w-7xl mx-auto mb-6">
-        <TitlePage text={pageData.title} />
-        <div className="flex flex-col md:flex-row gap-6">
-          <article className="w-full md:w-2/3">
-            {pageData.isPostPage ? (
-              firstPost?.introtext ? (
-                <section
-                  className="prose max-w-full"
-                  dangerouslySetInnerHTML={{ __html: processPostContent(firstPost.introtext) }}
-                />
-              ) : (
-                <p className="text-gray-500">Đang cập nhật nội dung...</p>
-              )
-            ) : (
-              <Suspense fallback={<Loading />}>
-                <CatePage postList={pageData?.postList} />
-                <Pagination
-                  page={page}
-                  totalPages={pageData?.totalPages || 0}
-                  alias={pageData?.alias}
-                />
-              </Suspense>
-            )}
-            <Script
-              id="news-article-jsonld"
-              type="application/ld+json"
-              dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-            />
-          </article>
-          <aside className="w-full md:w-1/3 flex flex-col gap-6">
-            <Suspense fallback={<Loading />}>
-              {/* @ts-expect-error Async Server Component */}
-              <PostNews />
-            </Suspense>
-          </aside>
-        </div>
-      </div>
-    </main>
-  );
+    /* ========= CANONICAL REDIRECT ========= */
+    const currentLast = params.slug.at(-1);
+    if (
+        pageData.isPostPage &&
+        pageData.canonicalSlug &&
+        currentLast !== pageData.canonicalSlug
+    ) {
+        permanentRedirect(`/${pageData.canonicalSlug}`);
+    }
+
+    const post = pageData.postList[0];
+
+    const jsonLd = pageData.isPostPage
+        ? {
+              "@context": "https://schema.org",
+              "@type": "NewsArticle",
+              headline: post.title,
+              image: post.images ? [post.images] : [],
+              datePublished: post.publish_up,
+              dateModified: post.modified,
+              author: { "@type": "Organization", name: "Nhanmac" },
+          }
+        : null;
+
+    return (
+        <main className="mx-auto px-4">
+            <div className="max-w-7xl mx-auto mb-6">
+                <TitlePage text={pageData.title} />
+
+                <div className="flex flex-col md:flex-row gap-6">
+                    <article className="w-full md:w-2/3">
+                        {pageData.isPostPage ? (
+                            <section
+                                className="prose max-w-full"
+                                dangerouslySetInnerHTML={{
+                                    __html: processPostContent(post.introtext),
+                                }}
+                            />
+                        ) : (
+                            <Suspense fallback={<Loading />}>
+                                <CatePage postList={pageData.postList} />
+                                <Pagination
+                                    page={page}
+                                    totalPages={pageData.totalPages || 0}
+                                    alias={pageData.alias}
+                                />
+                            </Suspense>
+                        )}
+
+                        {jsonLd && (
+                            <Script
+                                id="jsonld"
+                                type="application/ld+json"
+                                dangerouslySetInnerHTML={{
+                                    __html: JSON.stringify(jsonLd),
+                                }}
+                            />
+                        )}
+                    </article>
+
+                    <aside className="w-full md:w-1/3">
+                        <Suspense fallback={<Loading />}>
+                            {/* @ts-expect-error Async Server Component */}
+                            <PostNews />
+                        </Suspense>
+                    </aside>
+                </div>
+            </div>
+        </main>
+    );
 }
