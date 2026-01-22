@@ -1,28 +1,22 @@
-// next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
-    ignoreBuildErrors: true,
+      ignoreBuildErrors: true,
   },
-    reactStrictMode: false,
-    images: {
-        
-      domains: ['nhanmac.vn', 'localhost', 'luattiendat.com.vn', 'frontend.nhanmac.vn', 'backend.nhanmac.vn'],
+  images: {
       remotePatterns: [
-        {
-            
-          protocol: 'http',
-          hostname: 'localhost',
-          port: '3600',
-          pathname: '/uploads/**',
-          
-        },
+          {
+              protocol: "https",
+              hostname: "backend.nhanmac.vn",
+              pathname: "/upload/**",
+          },
+          {
+              protocol: "https",
+              hostname: "luattiendat.com.vn",
+              pathname: "/wp-content/**",
+          },
       ],
-    },
-    
-  };
-  
-  module.exports = nextConfig;
+  },
+};
+
+module.exports = nextConfig;

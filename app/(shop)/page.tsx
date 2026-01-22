@@ -54,18 +54,11 @@ export const metadata :Metadata= {
     card: "summary_large_image",
     title: "Công ty cổ phần công nghệ Thiên Lương - Chuyên nhãn mac",
     description: "Thiên Lương - Chuyên in ấn các loại tem nhãn mác kim loại, in đề can, in decal, in tem nhôm, in tem vỡ, in decal trong, in tem nhôm xước, nhãn vải, nhãn tem giấy",
-    images: ["https://nhanmac.vn/templates/nhanmac/favicon.ico"],
+    // images: ["https://nhanmac.vn/templates/nhanmac/favicon.ico"],
     site: "@nhanmac", // nếu có
     creator: "@nhanmac", // nếu có
   },
-  icons: {
-    icon: "https://nhanmac.vn/templates/nhanmac/favicon.ico",
-    apple: [
-      { url: "https://nhanmac.vn/templates/nhanmac/favicon.ico", sizes: "72x72" },
-      { url: "https://nhanmac.vn/templates/nhanmac/favicon.ico", sizes: "114x114" },
-      { url: "https://nhanmac.vn/templates/nhanmac/favicon.ico", sizes: "57x57" },
-    ],
-  },
+
 };
 
 const testimonials = [
@@ -195,7 +188,7 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <NhanDecal textTitle="Nhãn Vải" categoryKey="nhan-vai"/>
 
-              <NhanDecal textTitle="Nhãn Decal" categoryKey="nhan-decal-"/>
+              <NhanDecal textTitle="Nhãn Decal" categoryKey="nhan-decal"/>
             </div>
           </div>
         </div>
