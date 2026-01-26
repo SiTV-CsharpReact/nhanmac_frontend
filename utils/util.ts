@@ -1,5 +1,10 @@
 import dayjs from "dayjs";
+import pako from "pako";
 
+export const compressData = <T>(data: T): Uint8Array => {
+  const json = JSON.stringify(data);
+  return pako.deflate(json);
+};
 export function getConstantLabel(
     CONSTANT: ConstantItem[],
     text: string | number,

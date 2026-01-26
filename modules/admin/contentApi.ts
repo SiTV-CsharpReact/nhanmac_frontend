@@ -2,6 +2,7 @@ import { ApiResponse } from "@/types/apiResponse";
 import { ListPost, Post } from "@/types/contentItem";
 import { notification } from "antd";
 import { env } from "../../config/env";
+import { compressData } from "@/utils/util";
 
 interface FetchContentParams {
   page?: number;
@@ -57,7 +58,7 @@ export const fetchContentId = async (id: number): Promise<ApiResponse<Post>> => 
     const data: ApiResponse<Post> = await response.json();
     
     if (data.Code !== 200) {
-       data.Data = [];
+      data.Data = null;
       // Bạn có thể log lỗi hoặc xử lý thông báo ở đây nếu muốn
       console.warn('API trả về lỗi:', data.Message || 'Có lỗi xảy ra');
       // Trả về data đã điều chỉnh
@@ -85,7 +86,7 @@ export const fetchContentShortId = async (id: number): Promise<ApiResponse<Post>
     const data: ApiResponse<Post> = await response.json();
     
     if (data.Code !== 200) {
-       data.Data = [];
+      data.Data = null;
       // Bạn có thể log lỗi hoặc xử lý thông báo ở đây nếu muốn
       console.warn('API trả về lỗi:', data.Message || 'Có lỗi xảy ra');
      
@@ -115,7 +116,7 @@ export const fetchContentAlias = async (alias: string): Promise<ApiResponse<Post
     const data: ApiResponse<Post> = await response.json();
     // console.log(data)
     if (data.Code !== 200) {
-       data.Data = [];
+      data.Data = null;
       // Bạn có thể log lỗi hoặc xử lý thông báo ở đây nếu muốn
       console.warn('API trả về lỗi:', data.Message || 'Có lỗi xảy ra');
      
@@ -133,56 +134,113 @@ export const fetchContentAlias = async (alias: string): Promise<ApiResponse<Post
   }
 };
 
-// Tạo bài viết mới
-export const createContent = async (content: Partial<Post>): Promise<ApiResponse<Post>> => {
-  try {
-    const response = await fetch(`${env.apiUrl}/contents`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(content),
-    });
-    const data: ApiResponse<Post> = await response.json();
-    
-    if (data.Code !== 200) {
-       data.Data = [];
-      // Bạn có thể log lỗi hoặc xử lý thông báo ở đây nếu muốn
-      console.warn('API trả về lỗi:', data.Message || 'Có lỗi xảy ra');
-     
-    }
-    
-    return data;
-  } catch (error: any) {
-    if (typeof window !== "undefined") {
-      notification.error({
-        message: "Lỗi",
-        description: error.message || "Không thể tạo bài viết",
-      });
-    }
-    throw error;
-  }
+
+export const createContent = async (
+  content: Partial<Post>
+): Promise<ApiResponse<Post>> => {
+  // const compressedContent: string = compressData(content);
+  const compressedContent = compressData(content); // Uint8Array
+  const response = await fetch(`${env.apiUrl}/contents`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/octet-stream",
+    },
+    body: compressedContent, 
+  });
+
+  const data: ApiResponse<Post> = await response.json();
+  return data;
 };
+// Tạo bài viết mới
+// export const createContent = async (content: Partial<Post>): Promise<ApiResponse<Post>> => {
+//   try {
+//     const response = await fetch(`${env.apiUrl}/contents`, {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify(content),
+//     });
+//     const data: ApiResponse<Post> = await response.json();
+    
+//     if (data.Code !== 200) {
+//        data.Data = [];
+//       // Bạn có thể log lỗi hoặc xử lý thông báo ở đây nếu muốn
+//       console.warn('API trả về lỗi:', data.Message || 'Có lỗi xảy ra');
+     
+//     }
+    
+//     return data;
+//   } catch (error: any) {
+//     if (typeof window !== "undefined") {
+//       notification.error({
+//         message: "Lỗi",
+//         description: error.message || "Không thể tạo bài viết",
+//       });
+//     }
+//     throw error;
+//   }
+// };
 
 // Cập nhật bài viết
-export const updateContent = async (id: number, content: Partial<Post>): Promise<ApiResponse<Post>> => {
-  try {
-    const response = await fetch(`${env.apiUrl}/contents/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(content),
-    });
-    const data: ApiResponse<Post> = await response.json();
+// export const updateContent = async (id: number, content: Partial<Post>): Promise<ApiResponse<Post>> => {
+//   try {
+//     const compressedContent = compressData(content);
+
+//     const response = await fetch(`${env.apiUrl}/contents/${id}`, {
+//       method: 'PUT',
+//       // headers: {
+//       //   'Content-Type': 'application/json',
+//       // },
+//       headers: {
+//         "Content-Type": "application/octet-stream",
+//       },
+//       body: JSON.stringify({
+//         payload: compressedContent, // string
+//       }),
+//     });
+//     const data: ApiResponse<Post> = await response.json();
     
-    if (data.Code !== 200) {
-       data.Data = [];
-      // Bạn có thể log lỗi hoặc xử lý thông báo ở đây nếu muốn
-      console.warn('API trả về lỗi:', data.Message || 'Có lỗi xảy ra');
+//     if (data.Code !== 200) {
+//        data.Data = [];
+//       // Bạn có thể log lỗi hoặc xử lý thông báo ở đây nếu muốn
+//       console.warn('API trả về lỗi:', data.Message || 'Có lỗi xảy ra');
      
-    }
+//     }
     
+//     return data;
+//   } catch (error: any) {
+//     if (typeof window !== "undefined") {
+//       notification.error({
+//         message: "Lỗi",
+//         description: error.message || "Không thể cập nhật bài viết",
+//       });
+//     }
+//     throw error;
+//   }
+// };
+export const updateContent = async (
+  id: number,
+  content: Partial<Post>
+): Promise<ApiResponse<Post>> => {
+  try {
+    const compressedContent = compressData(content); // Uint8Array
+
+    const response = await fetch(`${env.apiUrl}/contents/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/octet-stream",
+      },
+      body: compressedContent, // ✅ gửi thẳng binary
+    });
+
+    const data: ApiResponse<Post> = await response.json();
+
+    if (data.Code !== 200) {
+      data.Data = null;
+      console.warn("API trả về lỗi:", data.Message || "Có lỗi xảy ra");
+    }
+
     return data;
   } catch (error: any) {
     if (typeof window !== "undefined") {
@@ -195,6 +253,7 @@ export const updateContent = async (id: number, content: Partial<Post>): Promise
   }
 };
 
+
 // Xóa bài viết
 export const deleteContent = async (id: number): Promise<ApiResponse<void>> => {
   try {
@@ -204,7 +263,7 @@ export const deleteContent = async (id: number): Promise<ApiResponse<void>> => {
     const data: ApiResponse<void> = await response.json();
     
     if (data.Code !== 200) {
-       data.Data = [];
+      data.Data = null;
       // Bạn có thể log lỗi hoặc xử lý thông báo ở đây nếu muốn
       console.warn('API trả về lỗi:', data.Message || 'Có lỗi xảy ra');
      
@@ -235,7 +294,7 @@ export const uploadImage = async (file: File): Promise<ApiResponse<{ imageUrl: s
     const data: ApiResponse<{ imageUrl: string }> = await response.json();
     
     if (data.Code !== 200) {
-       data.Data = [];
+      data.Data = null;
       // Bạn có thể log lỗi hoặc xử lý thông báo ở đây nếu muốn
       console.warn('API trả về lỗi:', data.Message || 'Có lỗi xảy ra');
      
