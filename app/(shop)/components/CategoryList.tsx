@@ -3,7 +3,7 @@ import { Post } from '@/types/contentItem';
 import Image from 'next/image';
 import Link from 'next/link';
 import Cookies from 'js-cookie';
-import { renderUrl } from '@/utils/util';
+import { renderSlugUrl } from '@/utils/util';
 // Giả sử API trả về mảng object dạng { id, title, image, imageAlt }
 type Category = {
     id: number | string;
@@ -34,14 +34,14 @@ const CategoryList = async ({ categoryKey, bgWhite }: Props) => {
                     <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
                         {postList.map((label, i) => {
                             return (
-                                <Link href={`${label.alias + label.id}.html`} key={`${label.id}-${i}`}
+                                <Link href={`${label.alias +'-'+ label.id}.html`} key={`${label.id}-${i}`}
                                     className={`group bg-white shadow-custom rounded  flex flex-col items-center overflow-hidden cursor-pointer ${i ===4 && 'hidden lg:block'} ${i}`}
                                 >
                                     <div className="bg-white shadow-custom p-0 flex flex-col items-center cursor-pointer">
                                         <div className="relative w-full  h-[173px]  bg-gray-100  overflow-hidden rounded-md">
                                             {label.urls ? (
                                                 <Image
-                                                    src={renderUrl(label.urls)}
+                                                    src={renderSlugUrl(label.urls)}
                                                     alt={label.image_desc || "Ảnh sản phẩm"}
                                                     fill
                                                     style={{ objectFit: 'cover' }}

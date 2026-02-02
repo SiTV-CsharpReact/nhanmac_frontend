@@ -1,9 +1,14 @@
 import dayjs from "dayjs";
 import pako from "pako";
-
+import { decode } from 'html-entities';
 export const compressData = <T>(data: T): Uint8Array => {
   const json = JSON.stringify(data);
   return pako.deflate(json);
+};
+
+export const gzipBase64 = (str: string) => {
+  const binary = pako.gzip(str);
+  return btoa(String.fromCharCode(...binary));
 };
 export function getConstantLabel(
     CONSTANT: ConstantItem[],
@@ -108,9 +113,19 @@ export function parseSlug(slug: string) {
 //     .replace(/^-+|-+$/g, "")
 //     .toLowerCase();
 // };
-export const removeVietnameseTones = (str: string) => {
-    // Chuyển mã hóa (%20, ...) thành dấu cách trước để xử lý toàn diện
-    str = decodeURIComponent(str);
+
+export const removeVietnameseTones = (str: string): string => {
+    // ✅ LIBRARY decode HTML entities - XỬ LÝ HẾT!
+    str = decode(str);  // nh&atilde;n → nhãn, m&aacute;c → mác
+    
+    // Decode URI (%20 → space)
+    try {
+        str = decodeURIComponent(str);
+    } catch (e) {
+        // ignore
+    }
+
+    // ✅ Unicode + SLUG FULL
     return (
         str
             .normalize("NFD")

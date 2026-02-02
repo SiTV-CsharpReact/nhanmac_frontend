@@ -1,6 +1,6 @@
 import { fetchCateAlias } from '@/modules/client/menuApi';
 import { Post } from '@/types/contentItem';
-import { renderUrl } from '@/utils/util';
+import { renderSlugUrl } from '@/utils/util';
 import Image from 'next/image';
 import Link from 'next/link';
 type Props = {
@@ -27,7 +27,7 @@ const NhanDecal = async ({ categoryKey, textTitle }: Props) => {
                             <div className="relative w-full h-[173px] rounded overflow-hidden bg-gray-100">
                                 {label?.urls ? (
                                     <Image
-                                        src={renderUrl(label.urls)}
+                                        src={renderSlugUrl(label.urls)}
                                         alt={label.image_desc || "Ảnh sản phẩm"}
                                         fill
                                         style={{ objectFit: "cover" }}

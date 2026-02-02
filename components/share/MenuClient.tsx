@@ -149,7 +149,7 @@ export default function MenuClient({
             </Link>
 
             {/* ===== WRAPPER ĐỂ ĐO WIDTH ===== */}
-            <nav className="flex-grow relative">
+            <nav className="flex-grow relative flex justify-center items-center">
               <div ref={containerRef} className="max-w-full">
                 <ul className="flex gap-6 whitespace-nowrap">
                   {visible.map((item) => {

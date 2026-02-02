@@ -5,7 +5,7 @@ import Image from "next/image";
 import { fetchSlides } from "@/modules/client/hompageApi";
 import { Post } from "@/types/contentItem";
 import Link from "next/link";
-import { renderUrl } from "@/utils/util";
+import { renderSlugUrl } from "@/utils/util";
 
 const SlideImage = () => {
   const [slides, setSlides] = useState<Post[]>([]);
@@ -72,7 +72,7 @@ const SlideImage = () => {
               <Link href={`/${slide.alias}-${slide.id}.html`} title={slide.title}>
                 <Image
                 //  src={'https://backend.nhanmac.vn/upload/image/TVT1-%20Tem%20vải%20in%20thêu%20dệt%20nhãn%20mác%20Logo%20quần%20áo%20thời%20trang%20may%20mặc%20là%20loại%20được%20sử%20dụng%20rất%20nhiều%20trên%20thị%20trường%20may%20mặc%20hiện%20nay.jpg'}
-                  src={renderUrl(slide?.urls)}
+                  src={renderSlugUrl(slide?.urls)}
                   width={764}
                   height={515}
                   alt={slide.title || "Slide image"}
@@ -102,7 +102,7 @@ const SlideImage = () => {
             >
               <Link href={`/${item.alias}-${item.id}.html`} title={item.title} className="group bg-white rounded  cursor-pointer">
                 <Image
-                 src={renderUrl(item?.urls)}
+                 src={renderSlugUrl(item?.urls)}
                   //  src={renderUrl('upload/image/Ảnh màn hình 2025-11-13 lúc 14.19.24.png')}
                   alt={item.title || "Slide image"}
                   title={item.title}

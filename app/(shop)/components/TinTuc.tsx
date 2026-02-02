@@ -1,6 +1,6 @@
 import { fetchCateAlias } from '@/modules/client/menuApi';
 import { Post } from '@/types/contentItem';
-import { renderUrl } from '@/utils/util';
+import { renderSlugUrl } from '@/utils/util';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -25,7 +25,7 @@ export default async function TinTuc() {
             <div className="relative w-full  h-[173px] aspect-[245/173] bg-gray-100  overflow-hidden rounded-md">
               {label.urls ? (
                 <Image
-                  src={renderUrl(label.urls)}
+                  src={renderSlugUrl(label.urls)}
                   alt={label.image_desc || "Ảnh sản phẩm"}
                   fill
                   style={{ objectFit: 'cover' }}

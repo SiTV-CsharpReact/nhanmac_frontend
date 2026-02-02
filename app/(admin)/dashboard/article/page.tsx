@@ -75,6 +75,16 @@ const EllipsisWithTooltip: React.FC<EllipsisWithTooltipProps> = ({
   );
 };
 
+
+const processContent = (html: string): string => {
+  if (!html) return '';
+  
+  return html
+    .replace(/href="(?:index\.php\/)?[^"]*\/(\d+)-([a-zA-Z0-9\-]+)(?:\.html)?"/g, `href="$2-$1.html"`)
+    .replace(/src="upload\/image\/([^"]+)"/g, `src="${renderSlugUrl('$1')}"`)
+    .replace(/(<img[^>]*?)\swidth="[^"]*"/g, '$1 width="100%"')
+    .replace(/<img((?![^>]*width=)[^>]*)>/g, '<img$1 width="100%">');
+};
 // export default EllipsisWithTooltip;
 
 const Page: React.FC = () => {
@@ -152,16 +162,54 @@ const Page: React.FC = () => {
   // Hàm lấy chi tiết bài viết
   const fetchDetail = async (id: number) => {
     try {
-      setLoadingDetail(true); // bật loading
+      setLoadingDetail(true);
       const result = await fetchContentId(id);
   
-      if (result.Code === 200) {
-        setDataDetail(result.Data);
+      if (result.Code === 200 && result.Data?.id) {  // ✅ Check id tồn tại
+        console.log(result.Data.introtext.replace(
+          /href="(?:index\.php\/)?[^"]*\/(\d+)-([a-zA-Z0-9\-]+)(?:\.html)?"/g,
+          (match, id, slug) => `href="${slug}-${id}.html"`
+        )
+        .replace(
+          /src="upload\/image\/([^"]+)"/g,
+          (match, filename) => {
+            return `src="${renderSlugUrl(filename)}"`
+          }
+        ).replace(
+          /(<img[^>]*?)\swidth="[^"]*"/g,
+          (match, startTag) => `${startTag} width="100%"`
+        )
+        .replace(
+          /<img((?![^>]*width=)[^>]*)>/g,
+          (match, inside) => `<img${inside} width="100%">`
+        ),'zo')
+        setDataDetail({
+          ...result.Data,
+          introtext: result.Data.introtext?.replace(
+            /href="(?:index\.php\/)?[^"]*\/(\d+)-([a-zA-Z0-9\-]+)(?:\.html)?"/g,
+            (match, id, slug) => `href="${slug}-${id}.html"`
+          )
+          .replace(
+            /src="upload\/image\/([^"]+)"/g,
+            (match, filename) => {
+              return `src="${renderSlugUrl(filename)}"`
+            }
+          ).replace(
+            /(<img[^>]*?)\swidth="[^"]*"/g,
+            (match, startTag) => `${startTag} width="100%"`
+          )
+          .replace(
+            /<img((?![^>]*width=)[^>]*)>/g,
+            (match, inside) => `<img${inside} width="100%">`
+          ) || '' // ✅ Fallback rỗng
+          
+        });
+      
       }
     } catch (error) {
-      // Error đã được xử lý trong API
+      console.error("Error fetching detail:", error);
     } finally {
-      setLoadingDetail(false); // tắt loading dù success hay error
+      setLoadingDetail(false);
     }
   };
 
@@ -250,7 +298,7 @@ const Page: React.FC = () => {
       width:100, // đặt width cố định để ellipsis hoạt động tốt
       align:'center',
       render: (text, record) => (
-        console.log(`${record.alias}-${record.id}.html`),
+        // console.log(`${record.alias}-${record.id}.html`),
         // <EllipsisWithTooltip
         //   text={
         //     <a href={`${window.location.origin}/${record?.alias}-${record.id}.html`}  target="_blank" rel="noopener noreferrer">

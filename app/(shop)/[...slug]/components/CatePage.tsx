@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Post } from "@/types/contentItem";
 import Image from "next/image";
-import { renderUrl } from "@/utils/util";
+import { renderSlugUrl } from "@/utils/util";
 type CatePageProps = {
   postList: Post[];
 };
@@ -25,7 +25,7 @@ export default function CatePage({ postList }: CatePageProps) {
                 <div className="relative w-full aspect-[245/173] h-[173px] bg-gray-100  overflow-hidden rounded-md">
                   {label.urls ? (
                     <Image
-                      src={renderUrl(label.urls)}
+                      src={renderSlugUrl(label.urls)}
                       alt={label.image_desc || "Ảnh sản phẩm"}
                       fill
                       unoptimized

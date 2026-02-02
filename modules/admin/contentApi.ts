@@ -2,7 +2,7 @@ import { ApiResponse } from "@/types/apiResponse";
 import { ListPost, Post } from "@/types/contentItem";
 import { notification } from "antd";
 import { env } from "../../config/env";
-import { compressData } from "@/utils/util";
+import { gzipBase64} from "@/utils/util";
 
 interface FetchContentParams {
   page?: number;
@@ -134,110 +134,56 @@ export const fetchContentAlias = async (alias: string): Promise<ApiResponse<Post
   }
 };
 
-
+// tạo mới bài viết
 export const createContent = async (
   content: Partial<Post>
 ): Promise<ApiResponse<Post>> => {
-  // const compressedContent: string = compressData(content);
-  const compressedContent = compressData(content); // Uint8Array
+  const payload = { ...content };
+
+  // 🔥 chỉ nén introtext
+  if (payload.introtext) {
+    payload.introtext = gzipBase64(payload.introtext);
+  }
+
   const response = await fetch(`${env.apiUrl}/contents`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/octet-stream",
+      "Content-Type": "application/json",
+      "X-Introtext-Compressed": "gzip",
     },
-    body: compressedContent, 
+    body: JSON.stringify(payload),
   });
 
   const data: ApiResponse<Post> = await response.json();
   return data;
 };
-// Tạo bài viết mới
-// export const createContent = async (content: Partial<Post>): Promise<ApiResponse<Post>> => {
-//   try {
-//     const response = await fetch(`${env.apiUrl}/contents`, {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//       },
-//       body: JSON.stringify(content),
-//     });
-//     const data: ApiResponse<Post> = await response.json();
-    
-//     if (data.Code !== 200) {
-//        data.Data = [];
-//       // Bạn có thể log lỗi hoặc xử lý thông báo ở đây nếu muốn
-//       console.warn('API trả về lỗi:', data.Message || 'Có lỗi xảy ra');
-     
-//     }
-    
-//     return data;
-//   } catch (error: any) {
-//     if (typeof window !== "undefined") {
-//       notification.error({
-//         message: "Lỗi",
-//         description: error.message || "Không thể tạo bài viết",
-//       });
-//     }
-//     throw error;
-//   }
-// };
+// update bài viết
 
-// Cập nhật bài viết
-// export const updateContent = async (id: number, content: Partial<Post>): Promise<ApiResponse<Post>> => {
-//   try {
-//     const compressedContent = compressData(content);
-
-//     const response = await fetch(`${env.apiUrl}/contents/${id}`, {
-//       method: 'PUT',
-//       // headers: {
-//       //   'Content-Type': 'application/json',
-//       // },
-//       headers: {
-//         "Content-Type": "application/octet-stream",
-//       },
-//       body: JSON.stringify({
-//         payload: compressedContent, // string
-//       }),
-//     });
-//     const data: ApiResponse<Post> = await response.json();
-    
-//     if (data.Code !== 200) {
-//        data.Data = [];
-//       // Bạn có thể log lỗi hoặc xử lý thông báo ở đây nếu muốn
-//       console.warn('API trả về lỗi:', data.Message || 'Có lỗi xảy ra');
-     
-//     }
-    
-//     return data;
-//   } catch (error: any) {
-//     if (typeof window !== "undefined") {
-//       notification.error({
-//         message: "Lỗi",
-//         description: error.message || "Không thể cập nhật bài viết",
-//       });
-//     }
-//     throw error;
-//   }
-// };
 export const updateContent = async (
   id: number,
   content: Partial<Post>
 ): Promise<ApiResponse<Post>> => {
   try {
-    const compressedContent = compressData(content); // Uint8Array
+    const payload = { ...content };
+    
+    // 🔥 chỉ nén introtext
+    if (payload.introtext) {
+      payload.introtext = gzipBase64(payload.introtext);
+    }
 
     const response = await fetch(`${env.apiUrl}/contents/${id}`, {
       method: "PUT",
       headers: {
-        "Content-Type": "application/octet-stream",
+        "Content-Type": "application/json",
+        "X-Introtext-Compressed": "gzip", // flag cho backend biết
       },
-      body: compressedContent, // ✅ gửi thẳng binary
+      body: JSON.stringify(payload),
     });
 
     const data: ApiResponse<Post> = await response.json();
 
     if (data.Code !== 200) {
-      data.Data = null;
+      data.Data = [];
       console.warn("API trả về lỗi:", data.Message || "Có lỗi xảy ra");
     }
 
@@ -252,7 +198,6 @@ export const updateContent = async (
     throw error;
   }
 };
-
 
 // Xóa bài viết
 export const deleteContent = async (id: number): Promise<ApiResponse<void>> => {

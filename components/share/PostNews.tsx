@@ -2,7 +2,7 @@ import { Post } from "@/types/contentItem";
 import Image from "next/image";
 import { fetchSlides } from "@/modules/client/hompageApi";
 import Link from "next/link";
-import { renderUrl } from "@/utils/util";
+import { renderSlugUrl } from "@/utils/util";
 
 export const revalidate = 60;
 
@@ -145,7 +145,7 @@ export default async function PostNews() {
                   <div className="relative w-[150px] h-[96px] bg-gray-100 overflow-hidden">
                     {post.urls ? (
                       <Image
-                        src={renderUrl(post.urls)}
+                        src={renderSlugUrl(post.urls)}
                         alt={post.image_desc || "Ảnh sản phẩm"}
                         fill
                         style={{ objectFit: "cover" }}

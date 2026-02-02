@@ -44,7 +44,7 @@ import { UploadOutlined, EyeOutlined } from "@ant-design/icons";
 import type { UploadFile } from "antd/es/upload/interface";
 
 import debounce from "lodash/debounce";
-import { renderUrl } from "@/utils/util";
+import { renderSlugUrl } from "@/utils/util";
 interface SortableRowProps {
   id: string;
   children: React.ReactNode;
@@ -420,7 +420,7 @@ const AdminPostManagement: React.FC = () => {
                   // console.log(formData.urls),
                   <div className="relative w-50 h-25 cursor-pointer overflow-hidden rounded group">
                     <Image
-                      src={renderUrl(formData.urls)}
+                      src={renderSlugUrl(formData.urls)}
                       alt="Ảnh"
                       width={200}
                       height={100}
@@ -428,7 +428,7 @@ const AdminPostManagement: React.FC = () => {
                     />
                     <EyeOutlined
                       onClick={() => {
-                        setPreviewImage(renderUrl(formData.urls));
+                        setPreviewImage(renderSlugUrl(formData.urls));
                         // src={renderUrl(label.urls)}
                         setPreviewTitle(formData.title || "Xem ảnh");
                         setPreviewOpen(true);
