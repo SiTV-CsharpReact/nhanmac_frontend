@@ -160,3 +160,69 @@ export const PendamicIcon =() =>(
 <path d="M10.1762 2.07461C8.70434 0.602734 6.30746 0.602734 4.83715 2.07461L0.759023 6.14961C0.732461 6.17617 0.718398 6.21211 0.718398 6.24961C0.718398 6.28711 0.732461 6.32305 0.759023 6.34961L1.33559 6.92617C1.36194 6.95241 1.39762 6.96714 1.4348 6.96714C1.47199 6.96714 1.50767 6.95241 1.53402 6.92617L5.61215 2.85117C6.1184 2.34492 6.79184 2.0668 7.50746 2.0668C8.22309 2.0668 8.89652 2.34492 9.40121 2.85117C9.90746 3.35742 10.1856 4.03086 10.1856 4.74492C10.1856 5.46055 9.90746 6.13242 9.40121 6.63867L5.24496 10.7934L4.57152 11.4668C3.94184 12.0965 2.9184 12.0965 2.28871 11.4668C1.98402 11.1621 1.81684 10.7574 1.81684 10.3262C1.81684 9.89492 1.98402 9.49024 2.28871 9.18555L6.41215 5.06367C6.51684 4.96055 6.65434 4.90273 6.80121 4.90273H6.80277C6.94965 4.90273 7.08559 4.96055 7.18871 5.06367C7.2934 5.16836 7.34965 5.30586 7.34965 5.45273C7.34965 5.59805 7.29184 5.73555 7.18871 5.83867L3.8184 9.20586C3.79184 9.23242 3.77777 9.26836 3.77777 9.30586C3.77777 9.34336 3.79184 9.3793 3.8184 9.40586L4.39496 9.98242C4.42132 10.0087 4.45699 10.0234 4.49418 10.0234C4.53137 10.0234 4.56704 10.0087 4.5934 9.98242L7.96215 6.61367C8.27309 6.30273 8.4434 5.89023 8.4434 5.45117C8.4434 5.01211 8.27152 4.59805 7.96215 4.28867C7.31996 3.64648 6.27621 3.64805 5.63402 4.28867L5.23402 4.69023L1.51215 8.41055C1.25954 8.66167 1.0593 8.96045 0.923047 9.28956C0.786792 9.61866 0.717231 9.97154 0.718398 10.3277C0.718398 11.0512 1.00121 11.7309 1.51215 12.2418C2.04184 12.7699 2.73559 13.034 3.42934 13.034C4.12309 13.034 4.81684 12.7699 5.34496 12.2418L10.1762 7.41367C10.8871 6.70117 11.2809 5.75273 11.2809 4.74492C11.2825 3.73555 10.8887 2.78711 10.1762 2.07461Z" fill="#8C8C8C"/>
 </svg>
 )
+
+export const FolderIcon = ({ className = "w-5 h-5", filled = false }) => (
+  <svg className={className} fill={filled ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+  </svg>
+);
+
+export const ChevronRightIcon = ({ className = "w-4 h-4" }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+  </svg>
+);
+
+export const ChevronDownIcon = ({ className = "w-4 h-4" }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+  </svg>
+);
+
+export const PlusIcon = ({ className = "w-5 h-5" }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+  </svg>
+);
+
+export const TrashIcon = ({ className = "w-5 h-5" }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+  </svg>
+);
+
+export const CloseIcon = ({ className = "w-5 h-5" }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
+
+export const GridIcon = ({ className = "w-5 h-5" }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+  </svg>
+);
+
+export const ListIcon = ({ className = "w-5 h-5" }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+  </svg>
+);
+
+export const CheckCircleIcon = ({ className = "w-5 h-5" }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
+export const HomeIcon = ({ className = "w-4 h-4" }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+  </svg>
+);
+
+export const UploadIconNew = ({ className = "w-5 h-5" }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+  </svg>
+);

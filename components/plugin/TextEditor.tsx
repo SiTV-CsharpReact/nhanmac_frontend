@@ -1,125 +1,83 @@
+"use client";
+import { useState, useRef } from 'react';
 import { env } from '../../config/env';
 import { Editor } from '@tinymce/tinymce-react';
-// import { env } from '../../../configs/Config';
-// import axios from 'axios';
-// import { Modal } from 'antd';
-// import { getLocalStorage, removeCookie } from 'utils/utils';
-// import { listAPI } from 'services/apiLibrary';
+import FileManager from './FileManager/FileManager'; // ← Import FileManager tự code
+
 const TextEditor = ({ editorData, setEditorData, disabled = false, toolbar = 'full', content }) => {
+  const editorRef = useRef(null);
+  const [showFileManager, setShowFileManager] = useState(false);
+  
   const handleEditorChange = (e) => {
     setEditorData(e.target.getContent());
   };
 
-  const toolBarBase =
-    'link formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify ' +
-    '| bullist numlist outdent indent | removeformat';
+  // 🔥 MỞ FILE MANAGER TỰ CODE
+  const filePickerCallback = (cb, value, meta) => {
+    editorRef.current.editor.windowManager.close();
+    setShowFileManager(true); // ← Mở modal FileManager
+  };
+
+  // 🔥 INSERT ẢNH VÀO EDITOR
+  const handleFileSelect = (url, name) => {
+    if (editorRef.current?.editor) {
+      const imgHtml = `
+        <img 
+          src="${url}" 
+          alt="${name}" 
+          title="${name}" 
+          style="max-width:100%; height:auto; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);"
+          class="img-fluid"
+        />
+      `;
+      editorRef.current.editor.insertContent(imgHtml);
+    }
+    setShowFileManager(false);
+  };
+
   const toolBarFull =
-    'undo redo| link code image | formatselect | bold italic forecolor backcolor | ' +
+    'undo redo | link code image | formatselect | bold italic forecolor backcolor | ' +
     'alignleft aligncenter alignright alignjustify | ' +
     'bullist numlist outdent indent | removeformat | help';
 
   return (
-    <Editor
-    // vo25zsk87945fzmx85atwacm1js3vj6chy45bcvpppbukvky
-    apiKey={`wc8tizgg3cirrsfaetuopcjdo8jq952zj6go5uz8qv3j3oc9`}
-    initialValue={content}
-    disabled={disabled}
-    init={{
-      height: 600,
-     width: '100%',
-      menubar: toolbar === 'full' ? true : false,
-      // images_upload_base_path: '/file/straight-upload',
-      images_upload_credentials: true,
-      plugins: [
-        'advlist',
-        'autolink',
-        'lists',
-        'link',
-        'image',
-        'charmap',
-        'preview',
-        'anchor',
-        'searchreplace',
-        'visualblocks',
-        'code',
-        'fullscreen',
-        'insertdatetime',
-        'media',
-        'code',
-        'help',
-        'wordcount',
-        'paste',
-      ],
-      toolbar: toolbar === 'full' ? toolBarFull : toolbar === 'base' ? toolBarBase : false,
-      image_title: true,
-      automatic_uploads: true,
-      file_picker_types: 'image',
-      file_picker_callback: function (cb, value, meta) {
-        var input = document.createElement('input');
-        input.setAttribute('type', 'file');
-        input.setAttribute('accept', 'image/*');
-        var url = env.uploadUrl;
-        var xhr = new XMLHttpRequest();
-        var fd = new FormData();
-        xhr.open('POST', url, true);
-        // xhr.setRequestHeader('Authorization', 'Bearer' + ' ' + getLocalStorage('access_token'));
+    <>
+      <Editor
+        ref={editorRef}
+        apiKey="wc8tizgg3cirrsfaetuopcjdo8jq952zj6go5uz8qv3j3oc9"
+        initialValue={content}
+        disabled={disabled}
+        init={{
+          height: 600,
+          width: '100%',
+          menubar: toolbar === 'full',
+          images_upload_credentials: true,
+          plugins: [
+            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap',
+            'preview', 'anchor', 'searchreplace', 'visualblocks', 'code',
+            'fullscreen', 'insertdatetime', 'media', 'help', 'wordcount', 'paste'
+          ],
+          toolbar: toolBarFull,
+          image_title: true,
+          automatic_uploads: false,
+          file_picker_types: 'image',
+          file_picker_callback: filePickerCallback,  // ← Trigger FileManager
+          paste_as_text: true,
+          images_default_width: '',
+          images_default_height: '',
+          image_caption: true
+        }}
+        onChange={handleEditorChange}
+      />
 
-        input.onchange = function () {
-          var file = this.files[0];
-          var reader = new FileReader();
-          xhr.onload = function () {
-            if (xhr.status === 200) {
-              const response = JSON.parse(xhr.responseText);
-              const imageUrl = response?.url || response?.Data?.url; // tùy vào backend bạn trả
-              cb(imageUrl); // Phải là đường dẫn URL ảnh hợp lệ
-            } else {
-              console.log("Upload thất bại");
-            }
-          };
-          reader.onload = function () {
-            var id = 'blobid' + new Date().getTime();
-            var blobCache = window.tinymce.activeEditor.editorUpload.blobCache;
-            var base64 = reader.result.split(',')[1];
-            var blobInfo = blobCache.create(id, file, base64);
-            blobCache.add(blobInfo);
-            fd.append('file', blobInfo.blob(), blobInfo.filename());
-            xhr.send(fd);
-          };
-
-          reader.readAsDataURL(file);
-        };
-
-        input.click();
-      },
-      images_upload_handler: (blobInfo, success, failure) => {
-        let data = new FormData();
-        data.append('file', blobInfo.blob(), blobInfo.filename());
-        var reader = new FileReader();
-        // Cần gửi FormData này bằng fetch hoặc axios
-        fetch(env.uploadUrl, {
-          method: 'POST',
-          body: data,
-        })
-          .then((res) => res.json())
-          .then((res) => {
-            const url = res?.url || res?.Data?.imageUrl; // kiểm tra lại
-            success(url); // Phải truyền URL ảnh thực sự
-          })
-          .catch(() => {
-            failure('Upload thất bại');
-          });
-          reader.readAsDataURL(blobInfo.blob());
-      },
-      paste_as_text: true,
-      paste_text_sticky: true,
-      paste_auto_cleanup_on_paste: true,
-      paste_remove_styles: true,
-      paste_remove_styles_if_webkit: true,
-      paste_strip_class_attributes: true,
-    }}
-    onChange={handleEditorChange}
-  />
-
+      {/* 🔥 FILE MANAGER TỰ CODE */}
+      {showFileManager && (
+        <FileManager 
+          onSelect={handleFileSelect}
+          onClose={() => setShowFileManager(false)}
+        />
+      )}
+    </>
   );
 };
 

@@ -18,6 +18,7 @@
     "dayjs": "^1.11.13",
     "debounce": "^2.2.0",
     "feed": "^5.0.1",
+    "flmngr": "^2.0.19",
     "html-entities": "^2.6.0",
     "js-cookie": "^3.0.5",
     "lodash": "^4.17.21",
