@@ -70,32 +70,78 @@ export default function FileManager({
   const goToFolder = (path: string) => fetchData(path);
 
   const goBack = () => {
-    if (!currentPath){
+    if (!currentPath) {
       message.error('Không thể trở về');
       return;
-    } 
+    }
     const parent = currentPath.split('/').slice(0, -1).join('/');
     fetchData(parent);
   };
 
+  // const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const files = Array.from(e.target.files || []);
+  //   if (!files.length) return;
+
+  //   const form = new FormData();
+  //   files.forEach(f => form.append('files', f));
+  //   form.append('folder', currentPath);
+
+  //   await fetch(
+  //     `${env.apiUrl}/folders/upload?folder=${encodeURIComponent(currentPath)}`,
+  //     {
+  //       method: 'POST',
+  //       body: form
+  //     }
+  //   );
+
+  //   e.target.value = '';
+  //   fetchData(currentPath);
+  // };
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
+
+    // ✅ CHẶN FILE > 5MB TRƯỚC KHI GỬI
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+    const invalidFiles = files.filter(f => f.size > MAX_SIZE);
+
+    if (invalidFiles.length > 0) {
+      message.error(
+        `${invalidFiles.map(f => f.name).join(', ')} vượt quá 5MB!`
+      );
+      e.target.value = ''; // Reset input
+      return;
+    }
 
     const form = new FormData();
     files.forEach(f => form.append('files', f));
     form.append('folder', currentPath);
 
-    await fetch(
-      `${env.apiUrl}/folders/upload?folder=${encodeURIComponent(currentPath)}`,
-      {
-        method: 'POST',
-        body: form
-      }
-    );
+    try {
+      // setCreating(true); // Loading state
+      const res = await fetch(
+        `${env.apiUrl}/folders/upload?folder=${encodeURIComponent(currentPath)}`,
+        {
+          method: 'POST',
+          body: form
+        }
+      );
 
-    e.target.value = '';
-    fetchData(currentPath);
+      if (!res.ok) {
+        const error = await res.json();
+        message.error(error.message || 'Upload thất bại!');
+        return;
+      }
+
+      message.success('Upload thành công!');
+    } catch (error) {
+      message.error('Lỗi kết nối!');
+      console.error('Upload error:', error);
+    } finally {
+      // setCreating(false);
+      e.target.value = '';
+      fetchData(currentPath);
+    }
   };
 
   const createFolder = async () => {
@@ -233,22 +279,22 @@ export default function FileManager({
               📁 Thêm thư mục
             </button>
             <button
-              onClick={(e) =>{
+              onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 fileInputRef.current?.click()
-              } }
+              }}
               className="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-green-50 hover:text-green-600 hover:shadow-md border border-gray-200 transition-all duration-200 flex items-center gap-2"
             >
               ⬆ Thêm ảnh
             </button>
 
             <button
-              onClick={(e) =>{
+              onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 goBack();
-              } }
+              }}
               disabled={!currentPath}
               className="px-3 py-2 rounded-lg text-sm font-medium disabled:text-gray-400 disabled:cursor-not-allowed disabled:bg-gray-100 bg-white hover:bg-gray-50 hover:text-gray-800 hover:shadow-sm border border-gray-200 transition-all duration-200 flex items-center gap-2 disabled:border-gray-300"
             >
@@ -273,97 +319,88 @@ export default function FileManager({
             </div>
 
             {data.folders.map(folder => (
-              <Tooltip placement="left" title={folder?.name}>
 
 
-                <div
-                  key={folder.path}
-                  onClick={() => {
-                    if (renamingPath) return; // đang rename thì không cho navigate
-                    goToFolder(folder.path);
-                  }}
-                  className="group px-3 py-2 rounded-xl cursor-pointer hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 mb-1 font-medium flex items-center justify-between shadow-sm hover:shadow-md"
-                >
-                  {/* LEFT: folder name */}
-                  <div className="flex items-center gap-2 truncate">
-                    📁 {renamingPath === folder.path ? (
-                      <input
-                        autoFocus
-                        value={renameValue}
-                        onClick={e => e.stopPropagation()}
-                        onChange={e => setRenameValue(e.target.value)}
-                        // onBlur={() => setRenamingPath(null)}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter') submitRename();
-                          if (e.key === 'Escape') setRenamingPath(null);
+              <div
+                key={folder.path}
+                onClick={() => {
+                  if (renamingPath) return; // đang rename thì không cho navigate
+                  goToFolder(folder.path);
+                }}
+                className="group px-3 py-2 rounded-xl cursor-pointer hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 mb-1 font-medium flex items-center justify-between shadow-sm hover:shadow-md"
+              >
+                {/* LEFT: folder name */}
+                <div className="flex items-center gap-2 truncate">
+                  📁 {renamingPath === folder.path ? (
+                    <input
+                      autoFocus
+                      value={renameValue}
+                      onClick={e => e.stopPropagation()}
+                      onChange={e => setRenameValue(e.target.value)}
+                      // onBlur={() => setRenamingPath(null)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') submitRename();
+                        if (e.key === 'Escape') setRenamingPath(null);
+                      }}
+                      className="border px-2 py-1 rounded text-sm w-full"
+                    />
+                  ) : (
+                    <span className="truncate">{folder.name}</span>
+                  )}
+                </div>
+
+                {/* RIGHT: actions */}
+
+                <div className="flex items-center gap-1">
+                  {renamingPath === folder.path ? (
+                    <>
+                      {/* SAVE BUTTON */}
+                      <Button
+                        icon={<CheckOutlined />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          submitRename();
                         }}
-                        className="border px-2 py-1 rounded text-sm w-full"
+                        className="group relative flex items-center justify-center !w-6 !h-6 !ml-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg hover:shadow-xl border border-green-400/50 hover:border-green-500/80 rounded-xl transition-all duration-200 hover:scale-110 hover:rotate-0 active:scale-95 active:rotate-180 transform-gpu backdrop-blur-sm hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-green-400/50 focus:ring-offset-1 focus:ring-offset-white ml-1"
                       />
-                    ) : (
-                      <span className="truncate">{folder.name}</span>
-                    )}
-                  </div>
 
-                  {/* RIGHT: actions */}
 
-                  <div className="flex items-center gap-1">
-                    {renamingPath === folder.path ? (
-                      <>
-                        {/* SAVE BUTTON */}
-                        <Button
-                          icon={<CheckOutlined />}
-                          onClick={e => {
-                            e.stopPropagation();
-                            submitRename();
-                          }}
-                          className="px-2 py-1 text-xs rounded-md bg-blue-500 text-white hover:bg-blue-600 h-[24px] w-[24px] ml-0.5"
-                        >
-
-                        </Button>
-
-                        {/* CANCEL BUTTON */}
-                        {/* <button
+                    </>
+                  ) : (
+                    <div className="opacity-0 group-hover:opacity-100 flex gap-1 transition-all">
+                      {/* RENAME */}
+                      <button
                         onClick={e => {
                           e.stopPropagation();
-                          setRenamingPath(null);
+                          e.preventDefault();
+                          setRenamingPath(folder.path);
+                          setRenameValue(folder.name);
                         }}
-                        className="px-2 py-1 text-xs rounded-md bg-gray-200 hover:bg-gray-300"
+                        className="w-7 h-7 flex items-center justify-center rounded-lg text-xs hover:bg-yellow-100 hover:text-yellow-600"
+                        title="Đổi tên"
                       >
-                        Hủy
-                      </button> */}
-                      </>
-                    ) : (
-                      <div className="opacity-0 group-hover:opacity-100 flex gap-1 transition-all">
-                        {/* RENAME */}
-                        <button
-                          onClick={e => {
-                            e.stopPropagation();
-                            setRenamingPath(folder.path);
-                            setRenameValue(folder.name);
-                          }}
-                          className="w-7 h-7 flex items-center justify-center rounded-lg text-xs hover:bg-yellow-100 hover:text-yellow-600"
-                          title="Đổi tên"
-                        >
-                          ✏️
-                        </button>
+                        ✏️
+                      </button>
 
-                        {/* DELETE */}
-                        <button
-                          onClick={e => {
-                            e.stopPropagation();
-                            handleDelete(folder.path);
-                          }}
-                          className="w-7 h-7 flex items-center justify-center rounded-lg text-xs hover:bg-red-100 hover:text-red-600"
-                          title="Xóa folder"
-                        >
-                          🗑
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
+                      {/* DELETE */}
+                      <button
+                        onClick={e => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          handleDelete(folder.path);
+                        }}
+                        className="w-7 h-7 flex items-center justify-center rounded-lg text-xs hover:bg-red-100 hover:text-red-600"
+                        title="Xóa folder"
+                      >
+                        🗑
+                      </button>
+                    </div>
+                  )}
                 </div>
-              </Tooltip>
+
+              </div>
+
             ))}
           </aside>
 
@@ -378,63 +415,69 @@ export default function FileManager({
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
 
-                {data.files.map(file => (
-                  <div
-                    key={file.path}
-                    onClick={() => onSelect(file.url, file.name)}
-                    className="group relative cursor-pointer select-none transition-all duration-300 rounded-2xl hover:bg-gray-50"
-                  >
-                    <div className="aspect-[4/3] rounded-2xl overflow-hidden mb-2 relative border-2 transition-all duration-500 shadow-sm group-hover:shadow-xl border-transparent bg-gray-50 group-hover:border-blue-200">
-
-                      {/* IMAGE */}
-                      <div className="w-full h-full relative overflow-hidden">
-                        <img
-                          src={file.url}
-                          alt={file.name}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                        />
-                        {/* Overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      </div>
-
-                      {/* DELETE BUTTON */}
-                      {/* <button
-                        onClick={e => {
-                          e.stopPropagation();
-                          deleteItems([{ path: file.path }]);
-                        }}
-                        className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-xl bg-white/20 backdrop-blur-md text-white border border-white/30 opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-red-500 hover:border-red-500 hover:scale-110 z-20 shadow-lg"
-                        title="Delete item"
-                      >
-                        ✕
-                      </button> */}
+                {
+                  data.files.length === 0 ? <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-gray-300 rounded-3xl bg-gradient-to-br from-gray-50 to-blue-50 hover:border-blue-300 transition-all duration-300">
+                    <div className="w-24 h-24 bg-gradient-to-br from-gray-200 to-gray-300 rounded-3xl flex items-center justify-center mb-6 shadow-xl">
+                      <span className="text-3xl opacity-60">🖼️</span>
                     </div>
-
-                    {/* INFO */}
-                    <div className="px-2 pb-2">
-                      {renamingPath === file.path ? (
-                        <input
-                          autoFocus
-                          value={renameValue}
-                          onChange={e => setRenameValue(e.target.value)}
-                          // onBlur={() => setRenamingPath(null)}
-                          onKeyDown={e => {
-                            if (e.key === 'Enter') submitRename();
-                            if (e.key === 'Escape') setRenamingPath(null);
-                          }}
-                          className="border px-2 py-1 rounded text-sm w-full"
-                        />
-                      ) : (
-                        <h4 className="text-sm font-bold truncate">
-                          {file.name}
-                        </h4>
-                      )}
-                      <div className="flex items-center text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                        <span>{(file.size / 1024).toFixed(1)} KB</span>
-                      </div>
+                    <h3 className="text-xl font-bold text-gray-700 mb-2">Chưa có ảnh</h3>
+                    <p className="text-gray-500 text-sm max-w-md text-center leading-relaxed">
+                      📁 Nhấn "Thêm ảnh" ở toolbar để upload hình ảnh vào thư mục này
+                    </p>
+                    <div className="mt-6 text-xs text-gray-400 bg-white/60 px-4 py-2 rounded-xl border">
+                      💡 Hỗ trợ JPG, PNG, WEBP (tối đa 5MB/file)
                     </div>
                   </div>
-                ))}
+                    :
+                    data.files.map(file => (
+
+
+                      <div
+                        key={file.path}
+                        onClick={() => onSelect(file.url, file.name)}
+                        className="group relative cursor-pointer select-none transition-all duration-300 rounded-2xl hover:bg-gray-50"
+                      >
+                        <div className="aspect-[4/3] rounded-2xl overflow-hidden mb-2 relative border-2 transition-all duration-500 shadow-sm group-hover:shadow-xl border-transparent bg-gray-50 group-hover:border-blue-200">
+
+                          {/* IMAGE */}
+                          <div className="w-full h-full relative overflow-hidden">
+                            <img
+                              src={file.url}
+                              alt={file.name}
+                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                            />
+                            {/* Overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          </div>
+
+                        </div>
+
+                        {/* INFO */}
+                        <div className="px-2 pb-2">
+                          {renamingPath === file.path ? (
+                            <input
+                              autoFocus
+                              value={renameValue}
+                              onChange={e => setRenameValue(e.target.value)}
+                              // onBlur={() => setRenamingPath(null)}
+                              onKeyDown={e => {
+                                if (e.key === 'Enter') submitRename();
+                                if (e.key === 'Escape') setRenamingPath(null);
+                              }}
+                              className="border px-2 py-1 rounded text-sm w-full"
+                            />
+                          ) : (
+                            <h4 className="text-sm font-bold truncate">
+                              {file.name}
+                            </h4>
+                          )}
+                          <div className="flex items-center text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                            <span>{(file.size / 1024).toFixed(1)} KB</span>
+                          </div>
+                        </div>
+                      </div>
+
+                    ))}
               </div>
             )}
           </main>
