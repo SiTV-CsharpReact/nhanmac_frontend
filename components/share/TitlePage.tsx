@@ -17,10 +17,10 @@ const TitlePage: React.FC<TitlePageProps> = ({text}) => {
   // }, []);
 
   return (
-    <div>
-      <h2 className="text-[#2F80ED] border-l-10 pl-2 text-2xl font-semibold uppercase my-5">
+    <div className="mt-4">
+      <span className="text-[#2F80ED] border-l-10 pl-2 text-2xl font-semibold ">
         {text}
-      </h2>
+      </span>
 
     </div>
   );
