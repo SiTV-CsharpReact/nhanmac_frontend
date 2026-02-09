@@ -239,18 +239,21 @@ export default function FileManager({
         })
       });
 
+      const result = await res.json();
+
       if (!res.ok) {
-        const err = await res.json();
-        alert(err.error || 'Xóa thất bại');
+        message.error(result.error || 'Xóa thất bại');
         return;
       }
 
+      message.success('Đã xóa thành công');
       fetchData(currentPath);
     } catch (err) {
       console.error(err);
-      alert('Lỗi server');
+      message.error('Lỗi server');
     }
   };
+
 
 
   /* ================= RENDER ================= */
@@ -413,72 +416,88 @@ export default function FileManager({
                 <div className="text-lg font-medium text-gray-600">Đang tải...</div>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              data.files.length === 0 ? <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-gray-300 rounded-3xl bg-gradient-to-br from-gray-50 to-blue-50 hover:border-blue-300 transition-all duration-300">
+                <div className="w-24 h-24 bg-gradient-to-br from-gray-200 to-gray-300 rounded-3xl flex items-center justify-center mb-6 shadow-xl">
+                  <span className="text-3xl opacity-60">🖼️</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-700 mb-2">Chưa có ảnh</h3>
+                <p className="text-gray-500 text-sm max-w-md text-center leading-relaxed">
+                  📁 Nhấn "Thêm ảnh" ở toolbar để upload hình ảnh vào thư mục này
+                </p>
+                <div className="mt-6 text-xs text-gray-400 bg-white/60 px-4 py-2 rounded-xl border">
+                  💡 Hỗ trợ JPG, PNG, WEBP (tối đa 5MB/file)
+                </div>
+              </div>
+                :
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
 
-                {
-                  data.files.length === 0 ? <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-gray-300 rounded-3xl bg-gradient-to-br from-gray-50 to-blue-50 hover:border-blue-300 transition-all duration-300">
-                    <div className="w-24 h-24 bg-gradient-to-br from-gray-200 to-gray-300 rounded-3xl flex items-center justify-center mb-6 shadow-xl">
-                      <span className="text-3xl opacity-60">🖼️</span>
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-700 mb-2">Chưa có ảnh</h3>
-                    <p className="text-gray-500 text-sm max-w-md text-center leading-relaxed">
-                      📁 Nhấn "Thêm ảnh" ở toolbar để upload hình ảnh vào thư mục này
-                    </p>
-                    <div className="mt-6 text-xs text-gray-400 bg-white/60 px-4 py-2 rounded-xl border">
-                      💡 Hỗ trợ JPG, PNG, WEBP (tối đa 5MB/file)
-                    </div>
-                  </div>
-                    :
+                  {
                     data.files.map(file => (
-
-
                       <div
                         key={file.path}
-                        onClick={() => onSelect(file.url, file.name)}
                         className="group relative cursor-pointer select-none transition-all duration-300 rounded-2xl hover:bg-gray-50"
                       >
-                        <div className="aspect-[4/3] rounded-2xl overflow-hidden mb-2 relative border-2 transition-all duration-500 shadow-sm group-hover:shadow-xl border-transparent bg-gray-50 group-hover:border-blue-200">
-
-                          {/* IMAGE */}
+                        {/* IMAGE */}
+                        <div
+                          onClick={() => onSelect(file.url, file.name)}
+                          className="aspect-[4/3] rounded-2xl overflow-hidden mb-2 relative border-2 transition-all duration-500 shadow-sm group-hover:shadow-xl border-transparent bg-gray-50 group-hover:border-blue-200"
+                        >
                           <div className="w-full h-full relative overflow-hidden">
                             <img
                               src={file.url}
                               alt={file.name}
                               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                             />
-                            {/* Overlay */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                          </div>
 
+                            {/* DELETE BUTTON */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(file.path);
+                              }}
+                              className="
+    absolute top-2 right-2 z-30
+    opacity-0 group-hover:opacity-100
+    transition-opacity duration-200
+
+    w-8 h-8
+    rounded-full
+    flex items-center justify-center
+
+    bg-white/40 backdrop-blur-md
+    border border-white/50
+    shadow-md
+
+    text-red-500
+    hover:bg-red-500
+    hover:text-white
+  "
+                            >
+                              🗑
+                            </button>
+
+
+
+                            {/* Overlay */}
+                            <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-0" />
+
+                          </div>
                         </div>
 
                         {/* INFO */}
                         <div className="px-2 pb-2">
-                          {renamingPath === file.path ? (
-                            <input
-                              autoFocus
-                              value={renameValue}
-                              onChange={e => setRenameValue(e.target.value)}
-                              // onBlur={() => setRenamingPath(null)}
-                              onKeyDown={e => {
-                                if (e.key === 'Enter') submitRename();
-                                if (e.key === 'Escape') setRenamingPath(null);
-                              }}
-                              className="border px-2 py-1 rounded text-sm w-full"
-                            />
-                          ) : (
-                            <h4 className="text-sm font-bold truncate">
-                              {file.name}
-                            </h4>
-                          )}
+                          <h4 className="text-sm font-bold truncate">
+                            {file.name}
+                          </h4>
                           <div className="flex items-center text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
                             <span>{(file.size / 1024).toFixed(1)} KB</span>
                           </div>
                         </div>
                       </div>
+                    ))
 
-                    ))}
-              </div>
+                  }
+                </div>
             )}
           </main>
         </div>

@@ -36,9 +36,9 @@ const SupportSection = () => (
     itemType="https://schema.org/ContactPage"
   >
     {/* Nội dung SupportSection giữ nguyên */}
-    <h2 className="text-2xl font-semibold mb-2 text-center">
+    <p className="text-2xl font-semibold mb-2 text-center">
       Hỗ trợ trực tuyến
-    </h2>
+    </p>
     <div className="h-1 bg-[#2F80ED] mx-auto w-1/2 max-w-[160px] mb-5"></div>
 
     <div
@@ -124,9 +124,9 @@ export default async function PostNews() {
         aria-label="Danh sách bài viết mới"
         className="bg-blue-50 p-4 rounded xl:h-[530px]  lg:h-[400px] lg:overflow-auto"
       >
-        <h2 className="text-2xl font-semibold mb-2 text-center">
+        <p className="text-2xl font-semibold mb-2 text-center">
           Bài viết mới
-        </h2>
+        </p>
         <div className="h-1 bg-[#2F80ED] mx-auto w-1/2 max-w-[160px] mb-5"></div>
 
         {posts.length === 0 ? (
