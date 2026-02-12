@@ -1,5 +1,6 @@
 "use client";
 import { env } from '@/config/env';
+import { removeVietnameseTones } from '@/utils/util';
 import { CheckOutlined } from '@ant-design/icons';
 import { message, Modal, Input, Button, Tooltip } from 'antd';
 import { useState, useRef, useCallback, useEffect } from 'react';
@@ -43,10 +44,15 @@ export default function FileManager({
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [creating, setCreating] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searching, setSearching] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const didFetch = useRef(false);
+  const didInitialFetch = useRef(false);
 
   /* ================= FETCH ================= */
   const fetchData = useCallback(async (folder: string) => {
+    if (loading) return;
     setLoading(true);
     try {
       const res = await fetch(
@@ -60,9 +66,12 @@ export default function FileManager({
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [loading]);
 
   useEffect(() => {
+    if (didFetch.current) return;
+    didFetch.current = true;
+  
     fetchData(currentFolder);
   }, [fetchData, currentFolder]);
 
@@ -78,25 +87,45 @@ export default function FileManager({
     fetchData(parent);
   };
 
-  // const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const files = Array.from(e.target.files || []);
-  //   if (!files.length) return;
+  const searchFiles = useCallback(async (keyword: string) => {
+    if (!keyword.trim()) {
+      if (didInitialFetch.current) return;  // ✅ Không fetch nếu đã load lần đầu
+      fetchData(currentPath);
+      didInitialFetch.current = true;
+      return;
+    }
 
-  //   const form = new FormData();
-  //   files.forEach(f => form.append('files', f));
-  //   form.append('folder', currentPath);
+    try {
+      setSearching(true);
 
-  //   await fetch(
-  //     `${env.apiUrl}/folders/upload?folder=${encodeURIComponent(currentPath)}`,
-  //     {
-  //       method: 'POST',
-  //       body: form
-  //     }
-  //   );
+      const res = await fetch(
+        `${env.apiUrl}/folders/search?keyword=${removeVietnameseTones(
+          keyword
+        )}&folder=${removeVietnameseTones(currentPath)}`
+      );
 
-  //   e.target.value = '';
-  //   fetchData(currentPath);
-  // };
+      const result = await res.json();
+
+      if (res.ok) {
+        setData(prev => ({
+          ...prev,
+          files: result.files || []
+        }));
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSearching(false);
+    }
+  }, [currentPath, fetchData]);
+  useEffect(() => {
+    if (!searchKeyword.trim()) return;  // ✅ Skip empty search
+    
+    const timeout = setTimeout(() => {
+      searchFiles(searchKeyword);
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [searchKeyword, searchFiles]);
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
@@ -177,19 +206,6 @@ export default function FileManager({
     } finally {
       setCreating(false);
     }
-  };
-
-
-  const deleteItems = async (items: { path: string }[]) => {
-    if (!confirm('Xóa mục này?')) return;
-
-    await fetch(`${env.apiUrl}/folders/delete`, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items })
-    });
-
-    fetchData(currentPath);
   };
 
   const submitRename = async () => {
@@ -304,7 +320,22 @@ export default function FileManager({
               ← Trở về
             </button>
           </div>
+          <div className="relative w-72">
+            <Input
+              size="middle"
+              placeholder="🔍 Tìm ảnh trong thư mục..."
+              value={searchKeyword}
+              onChange={e => setSearchKeyword(e.target.value)}
+              allowClear
+              className="rounded-xl"
+            />
 
+            {searching && (
+              <div className="absolute right-3 top-2 text-gray-400 animate-spin">
+                ⏳
+              </div>
+            )}
+          </div>
           <button
             onClick={onClose}
             className="p-2 rounded-full hover:bg-red-50 hover:text-red-600 transition-all duration-200 text-xl font-bold ml-auto"
@@ -429,75 +460,86 @@ export default function FileManager({
                 </div>
               </div>
                 :
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                <>
+                  {searchKeyword && (
+                    <div className="mb-4 text-sm text-gray-500 bg-blue-50 px-4 py-2 rounded-xl border border-blue-100">
+                      🔎 Kết quả cho: <b className="text-blue-600">{searchKeyword}</b>
+                      <span className="ml-2 text-gray-400">
+                        ({data.files.length} ảnh)
+                      </span>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
 
-                  {
-                    data.files.map(file => (
-                      <div
-                        key={file.path}
-                        className="group relative cursor-pointer select-none transition-all duration-300 rounded-2xl hover:bg-gray-50"
-                      >
-                        {/* IMAGE */}
+                    {
+                      data.files.map(file => (
                         <div
-                          onClick={() => onSelect(file.url, file.name)}
-                          className="aspect-[4/3] rounded-2xl overflow-hidden mb-2 relative border-2 transition-all duration-500 shadow-sm group-hover:shadow-xl border-transparent bg-gray-50 group-hover:border-blue-200"
+                          key={file.path}
+                          className="group relative cursor-pointer select-none transition-all duration-300 rounded-2xl hover:bg-gray-50"
                         >
-                          <div className="w-full h-full relative overflow-hidden">
-                            <img
-                              src={file.url}
-                              alt={file.name}
-                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                            />
+                          {/* IMAGE */}
+                          <div
+                            onClick={() => onSelect(file.url, file.name)}
+                            className="aspect-[4/3] rounded-2xl overflow-hidden mb-2 relative border-2 transition-all duration-500 shadow-sm group-hover:shadow-xl border-transparent bg-gray-50 group-hover:border-blue-200"
+                          >
+                            <div className="w-full h-full relative overflow-hidden">
+                              <img
+                                src={file.url}
+                                alt={file.name}
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                              />
 
-                            {/* DELETE BUTTON */}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDelete(file.path);
-                              }}
-                              className="
-    absolute top-2 right-2 z-30
-    opacity-0 group-hover:opacity-100
-    transition-opacity duration-200
+                              {/* DELETE BUTTON */}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDelete(file.path);
+                                }}
+                                className="
+absolute top-2 right-2 z-30
+opacity-0 group-hover:opacity-100
+transition-opacity duration-200
 
-    w-8 h-8
-    rounded-full
-    flex items-center justify-center
+w-8 h-8
+rounded-full
+flex items-center justify-center
 
-    bg-white/40 backdrop-blur-md
-    border border-white/50
-    shadow-md
+bg-white/40 backdrop-blur-md
+border border-white/50
+shadow-md
 
-    text-red-500
-    hover:bg-red-500
-    hover:text-white
-  "
-                            >
-                              🗑
-                            </button>
+text-red-500
+hover:bg-red-500
+hover:text-white
+"
+                              >
+                                🗑
+                              </button>
 
 
 
-                            {/* Overlay */}
-                            <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-0" />
+                              {/* Overlay */}
+                              <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-0" />
 
+                            </div>
+                          </div>
+
+                          {/* INFO */}
+                          <div className="px-2 pb-2">
+                            <h4 className="text-sm font-bold truncate">
+                              {file.name}
+                            </h4>
+                            <div className="flex items-center text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                              <span>{(file.size / 1024).toFixed(1)} KB</span>
+                            </div>
                           </div>
                         </div>
+                      ))
 
-                        {/* INFO */}
-                        <div className="px-2 pb-2">
-                          <h4 className="text-sm font-bold truncate">
-                            {file.name}
-                          </h4>
-                          <div className="flex items-center text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                            <span>{(file.size / 1024).toFixed(1)} KB</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))
+                    }
+                  </div>
+                </>
 
-                  }
-                </div>
             )}
           </main>
         </div>

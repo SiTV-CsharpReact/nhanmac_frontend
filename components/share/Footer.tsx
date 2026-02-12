@@ -23,9 +23,9 @@ const Footer = () => {
             height={50}
             className="mb-3"
           />
-          <h3 className="font-bold uppercase text-xl">
+          <p className="font-bold uppercase text-xl">
             CÔNG TY CỔ PHẦN CÔNG NGHỆ THIÊN LƯƠNG
-          </h3>
+          </p>
           <p className="flex items-start">
             <Image
               src="/icons/map-2.svg"
@@ -82,24 +82,24 @@ const Footer = () => {
           {/* Menu */}
           <div className="flex flex-wrap justify-between text-white text-sm mb-6">
           <Link href="/">
-            <h3 className="text-lg font-medium pb-2 cursor-pointer hover:text-blue-400">
+            <p className="text-lg font-medium pb-2 cursor-pointer hover:text-blue-400">
               Trang chủ
-            </h3>
+            </p>
             </Link>
             <Link href="/tem-nhan-mac-cong-ty-thien-luong-307.html">
-            <h3 className="text-lg font-medium pb-2 cursor-pointer hover:text-blue-400">
+            <p className="text-lg font-medium pb-2 cursor-pointer hover:text-blue-400">
               Giới thiệu
-            </h3>
+            </p>
             </Link>
             <Link href="/tin-tong-hop">
-            <h3 className="text-lg font-medium pb-2 cursor-pointer hover:text-blue-400">
+            <p className="text-lg font-medium pb-2 cursor-pointer hover:text-blue-400">
               Tin tức
-            </h3>
+            </p>
             </Link>
             <Link href="/contact">
-            <h3 className="text-lg font-medium pb-2 cursor-pointer hover:text-blue-400">
+            <p className="text-lg font-medium pb-2 cursor-pointer hover:text-blue-400">
               Liên hệ
-            </h3>
+            </p>
             </Link>
           </div>
 

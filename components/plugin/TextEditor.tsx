@@ -4,7 +4,7 @@ import { env } from '../../config/env';
 import { Editor } from '@tinymce/tinymce-react';
 import FileManager from './FileManager/FileManager'; // ← Import FileManager tự code
 
-const TextEditor = ({ editorData, setEditorData, disabled = false, toolbar = 'full', content }) => {
+const TextEditor = ({  setEditorData, disabled = false, toolbar = 'full', content }) => {
   const editorRef = useRef(null);
   const [showFileManager, setShowFileManager] = useState(false);
   
@@ -36,9 +36,10 @@ const TextEditor = ({ editorData, setEditorData, disabled = false, toolbar = 'fu
   };
 
   const toolBarFull =
-    'undo redo | link code image | formatselect | bold italic forecolor backcolor | ' +
-    'alignleft aligncenter alignright alignjustify | ' +
-    'bullist numlist outdent indent | removeformat | help';
+  'undo redo | link code image | formatselect fontsizeselect | ' +
+  'bold italic underline forecolor backcolor | ' +
+  'alignleft aligncenter alignright alignjustify | ' +
+  'bullist numlist outdent indent | removeformat | help';
 
   return (
     <>
