@@ -14,7 +14,7 @@ import {
 } from "../../../utils/util";
 import CatePage from "./components/CatePage";
 import Pagination from "./components/Pagination";
-
+import '@/public/article-content.css'
 /* ================= TYPES ================= */
 
 type Params = {
@@ -247,7 +247,7 @@ export default async function Page({
                     <article className="w-full md:w-2/3">
                         {pageData.isPostPage ? (
                             <section
-                                className="prose max-w-full"
+                                className="prose max-w-full article-content"
                                 dangerouslySetInnerHTML={{
                                     __html: processPostContent(post.introtext),
                                 }}

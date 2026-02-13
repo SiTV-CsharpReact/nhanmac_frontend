@@ -1,6 +1,5 @@
 "use client";
 import { useState, useRef } from 'react';
-import { env } from '../../config/env';
 import { Editor } from '@tinymce/tinymce-react';
 import FileManager from './FileManager/FileManager'; // ← Import FileManager tự code
 
@@ -36,7 +35,7 @@ const TextEditor = ({  setEditorData, disabled = false, toolbar = 'full', conten
   };
 
   const toolBarFull =
-  'undo redo | link code image | formatselect fontsizeselect | ' +
+  'undo redo | link anchor code image | formatselect fontsizeselect | ' +
   'bold italic underline forecolor backcolor | ' +
   'alignleft aligncenter alignright alignjustify | ' +
   'bullist numlist outdent indent | removeformat | help';
@@ -53,8 +52,10 @@ const TextEditor = ({  setEditorData, disabled = false, toolbar = 'full', conten
           width: '100%',
           menubar: toolbar === 'full',
           images_upload_credentials: true,
+          body_class: 'article-content',
+          content_css: '/article-content.css',
           plugins: [
-            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap',
+            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap','anchor',
             'preview', 'anchor', 'searchreplace', 'visualblocks', 'code',
             'fullscreen', 'insertdatetime', 'media', 'help', 'wordcount', 'paste'
           ],
@@ -63,7 +64,36 @@ const TextEditor = ({  setEditorData, disabled = false, toolbar = 'full', conten
           automatic_uploads: false,
           file_picker_types: 'image',
           file_picker_callback: filePickerCallback,  // ← Trigger FileManager
-          paste_as_text: true,
+          paste_as_text: false,
+          paste_webkit_styles: 'all',
+          paste_retain_style_properties: 'all',
+          paste_enable_default_filters: false,
+          valid_elements: '*[*]',
+          extended_valid_elements:
+            'a[href|target|title|class|style],img[src|alt|title|width|height|class|style],span[style],h1[id|class|style],h2[id|class|style],h3[id|class|style]',
+            setup: (editor) => {
+              editor.on('keydown', function (e) {
+                if (e.key === 'Tab') {
+                  e.preventDefault();
+                  editor.execCommand('mceInsertContent', false, '&nbsp;&nbsp;&nbsp;&nbsp;');
+                }
+              });
+            },
+          //   content_style: `
+          //   body { font-family: Arial, sans-serif; font-size:14px; }
+          //   h1 { 
+          //     font-size: 18px; 
+          //     font-weight: bold; 
+          //     color: #e36c0a;
+          //     text-transform: uppercase;
+          //   }
+          //   h2 { font-size: 14px; font-weight: bold;   text-transform: uppercase;}
+          //   h3 { font-size: 14px; font-weight: bold; text-transform: capitalize;  }
+          //   a { text-decoration: none; }
+          //   img { max-width:100%; height:auto; }
+          // `,
+          link_default_target: '_blank',
+          link_title: false,      
           images_default_width: '',
           images_default_height: '',
           image_caption: true

@@ -98,12 +98,14 @@ const ContentArticle: React.FC<typeContentArticle> = ({
   // ✅ FIXED: onFinish dùng introtext state
   const onFinish = async (values: any) => {
     try {
+      console.log(values)
       const formData = {
         ...values,
         picture: '',
+        alias:values?.alias?.replaceAll("_","-"),
         introtext: introtext,
         created: dayjs().format("YYYY-MM-DD HH:mm:ss"),
-        title_alias: "test",
+        title_alias: values?.title  ,
         urls: urlFile?.pictureUrl,
         images: urlFile?.pictureName
       };
@@ -111,16 +113,19 @@ const ContentArticle: React.FC<typeContentArticle> = ({
       if (typeModal === 1) {
         const response = await createContent(formData);
         if (response.Code === 200) {
-          message.success(response.Message || "Tạo bài viết thành công!");
-          reloadPage();
+          message.success("Tạo bài viết thành công!").then(() => {
+            reloadPage();
+          });
         } else {
           message.error(response.Message || "Tạo bài viết thất bại!");
         }
       } else {
         const response = await updateContent(data?.id, formData);
         if (response.Code === 200) {
-          message.success("Cập nhật bài viết thành công!");
-          reloadPage();
+          message.success("Cập nhật bài viết thành công!").then(() => {
+            reloadPage();
+          });
+          // reloadPage();
         } else {
           message.error(response.Message || "Cập nhật bài viết thất bại!");
         }
@@ -190,7 +195,7 @@ const ContentArticle: React.FC<typeContentArticle> = ({
     setLoadingAlias(true);
     const handler = setTimeout(() => {
       const converted = removeVietnameseTones(title);
-      console.log(converted)
+      // console.log(converted)
       setAlias(converted.replaceAll("_","-"));
       form.setFieldsValue({ alias: converted });
       setLoadingAlias(false);
