@@ -34,12 +34,14 @@ const TextEditor = ({  setEditorData, disabled = false, toolbar = 'full', conten
     setShowFileManager(false);
   };
 
-  const toolBarFull =
-  'undo redo | link anchor code image | formatselect fontsizeselect | ' +
-  'bold italic underline forecolor backcolor | ' +
-  'alignleft aligncenter alignright alignjustify | ' +
-  'bullist numlist outdent indent | removeformat | help';
+  const toolBarFull =  "anchor |undo redo | styles | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image";
+  // 'undo redo | link anchor code image | formatselect fontsizeselect | ' +
+  // 'bold italic underline forecolor backcolor | ' +
+  // 'alignleft aligncenter alignright alignjustify | ' +
+  // 'bullist numlist outdent indent | removeformat | help';
 
+
+  
   return (
     <>
       <Editor
@@ -55,9 +57,12 @@ const TextEditor = ({  setEditorData, disabled = false, toolbar = 'full', conten
           body_class: 'article-content',
           content_css: '/article-content.css',
           plugins: [
-            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap','anchor',
-            'preview', 'anchor', 'searchreplace', 'visualblocks', 'code',
-            'fullscreen', 'insertdatetime', 'media', 'help', 'wordcount', 'paste'
+            // 'advlist', 'autolink', 'lists', 'link', 'image', 'charmap','anchor',
+            // 'preview', 'anchor', 'searchreplace', 'visualblocks', 'code',
+            // 'fullscreen', 'insertdatetime', 'media', 'help', 'wordcount', 'paste'
+            "advlist", "anchor", "autolink", "charmap", "code", "fullscreen",
+            "help", "image", "insertdatetime", "link", "lists", "media",
+            "preview", "searchreplace", "table", "visualblocks",
           ],
           toolbar: toolBarFull,
           image_title: true,
@@ -92,6 +97,7 @@ const TextEditor = ({  setEditorData, disabled = false, toolbar = 'full', conten
           //   a { text-decoration: none; }
           //   img { max-width:100%; height:auto; }
           // `,
+           toolbar_mode: 'wrap',
           link_default_target: '_blank',
           link_title: false,      
           images_default_width: '',

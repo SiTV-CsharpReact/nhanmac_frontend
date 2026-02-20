@@ -12,7 +12,7 @@
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@tailwindcss/postcss": "^4.1.5",
-    "@tinymce/tinymce-react": "3.13.1",
+    "@tinymce/tinymce-react": "^6.3.0",
     "antd": "^5.24.9",
     "ckeditor5-build-full": "^25.0.0",
     "dayjs": "^1.11.13",
