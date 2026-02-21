@@ -52,57 +52,64 @@ const TextEditor = ({  setEditorData, disabled = false, toolbar = 'full', conten
         init={{
           height: 600,
           width: '100%',
-          menubar: toolbar === 'full',
+          menubar: true,
           images_upload_credentials: true,
           body_class: 'article-content',
           content_css: '/article-content.css',
+          toolbar_mode: "sliding",
           plugins: [
-            // 'advlist', 'autolink', 'lists', 'link', 'image', 'charmap','anchor',
-            // 'preview', 'anchor', 'searchreplace', 'visualblocks', 'code',
-            // 'fullscreen', 'insertdatetime', 'media', 'help', 'wordcount', 'paste'
-            "advlist", "anchor", "autolink", "charmap", "code", "fullscreen",
-            "help", "image", "insertdatetime", "link", "lists", "media",
-            "preview", "searchreplace", "table", "visualblocks",
+            "advlist", "anchor", "autolink",
+            "charmap", "code", "fullscreen",
+            "help", "image", "insertdatetime",
+            "link", "lists", "media",
+            "preview", "searchreplace",
+            "table", "visualblocks"
           ],
-          toolbar: toolBarFull,
-          image_title: true,
-          automatic_uploads: false,
-          file_picker_types: 'image',
-          file_picker_callback: filePickerCallback,  // ← Trigger FileManager
-          paste_as_text: false,
-          paste_webkit_styles: 'all',
-          paste_retain_style_properties: 'all',
-          paste_enable_default_filters: false,
-          valid_elements: '*[*]',
+      
+          toolbar:
+            "undo redo | anchor link image | blocks fontsize| bold italic underline forecolor backcolor | " +
+            "alignleft aligncenter alignright alignjustify | " +
+            "bullist numlist outdent indent | " +
+            "code preview fullscreen",
+      
+          contextmenu: "link image anchor",
+      
+          /* 🔥 QUAN TRỌNG NHẤT */
+          valid_elements: "*[*]",
           extended_valid_elements:
-            'a[href|target|title|class|style],img[src|alt|title|width|height|class|style],span[style],h1[id|class|style],h2[id|class|style],h3[id|class|style]',
-            setup: (editor) => {
-              editor.on('keydown', function (e) {
-                if (e.key === 'Tab') {
-                  e.preventDefault();
-                  editor.execCommand('mceInsertContent', false, '&nbsp;&nbsp;&nbsp;&nbsp;');
-                }
-              });
-            },
-          //   content_style: `
-          //   body { font-family: Arial, sans-serif; font-size:14px; }
-          //   h1 { 
-          //     font-size: 18px; 
-          //     font-weight: bold; 
-          //     color: #e36c0a;
-          //     text-transform: uppercase;
-          //   }
-          //   h2 { font-size: 14px; font-weight: bold;   text-transform: uppercase;}
-          //   h3 { font-size: 14px; font-weight: bold; text-transform: capitalize;  }
-          //   a { text-decoration: none; }
-          //   img { max-width:100%; height:auto; }
-          // `,
-           toolbar_mode: 'wrap',
-          link_default_target: '_blank',
-          link_title: false,      
-          images_default_width: '',
-          images_default_height: '',
-          image_caption: true
+            "a[href|target|title|class|style|id]," +
+            "img[src|alt|title|width|height|class|style]," +
+            "span[style]," +
+            "h1[id|class|style]," +
+            "h2[id|class|style]," +
+            "h3[id|class|style]," +
+            "p[id|class|style]," +
+            "div[id|class|style]",
+      
+          formats: {
+            anchor: {
+              selector: "h1,h2,h3,p,div",
+              attributes: { id: "%value" }
+            }
+          },
+      
+          /* Cho phép link nội bộ */
+          link_default_target: "_blank",
+          link_title: false,
+      
+          file_picker_types: "image",
+          file_picker_callback: filePickerCallback,
+      
+          image_caption: true,
+      
+          setup: (editor) => {
+            editor.on("keydown", function (e) {
+              if (e.key === "Tab") {
+                e.preventDefault();
+                editor.insertContent("&nbsp;&nbsp;&nbsp;&nbsp;");
+              }
+            });
+          }
         }}
         onChange={handleEditorChange}
       />
