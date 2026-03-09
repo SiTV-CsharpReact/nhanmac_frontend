@@ -1,71 +1,358 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Asset, DirectoryNode } from '../types';
+import { api } from '../api';
+import Tooltip from './Tooltip';
+import {
+  DownOutlined, FolderFilled, FolderOpenFilled,
+  EditOutlined, DeleteOutlined,
+  FolderAddOutlined, CheckOutlined, CloseOutlined,
+} from '@ant-design/icons';
 
-import React from 'react';
-import { FolderNode } from '../types';
-import { MOCK_FOLDERS } from '../constants';
-import { ChevronDownIcon, ChevronRightIcon, FolderIcon } from './Icons';
+interface SidebarProps {
+  assets: Asset[];
+  tree: DirectoryNode[];
+  currentPath: string[]; // array of path segments
+  onNavigate: (folderId: string | null) => void;
+  onFolderRenamed?: (oldPath: string, newName: string) => void;
+  onFolderDeleted?: (path: string) => void;
+  // Inline create folder
+  creatingFolder?: boolean;
+  onConfirmCreate?: (name: string) => void;
+  onCancelCreate?: () => void;
+}
 
-const FolderTreeItem: React.FC<{ node: FolderNode; depth: number }> = ({ node, depth }) => {
-  const hasChildren = node.children && node.children.length > 0;
-  const isActive = node.isActive;
-  const paddingLeft = depth * 16 + 20;
+const Sidebar: React.FC<SidebarProps> = ({
+  tree, currentPath, onNavigate,
+  onFolderRenamed, onFolderDeleted,
+  creatingFolder, onConfirmCreate, onCancelCreate,
+}) => {
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({ 'root': true });
+  const [usedGB, setUsedGB] = useState<string>('0');
+  const [maxGB, setMaxGB] = useState<string>('0');
+  const [percent, setPercent] = useState<number>(0);
+
+  // Context menu
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; node: DirectoryNode } | null>(null);
+  const [renamingPath, setRenamingPath] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const renameInputRef = useRef<HTMLInputElement>(null);
+  const contextMenuRef = useRef<HTMLDivElement>(null);
+
+  // Inline new folder
+  const [newFolderName, setNewFolderName] = useState('');
+  const newFolderInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-expand current path
+  useEffect(() => {
+    if (currentPath.length > 0) {
+      const next = { ...expanded };
+      currentPath.forEach(p => { next[p] = true; });
+      setExpanded(next);
+    }
+  }, [currentPath]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Focus new folder input when shown
+  useEffect(() => {
+    if (creatingFolder) {
+      setNewFolderName('Thư mục mới');
+      setTimeout(() => {
+        newFolderInputRef.current?.focus();
+        newFolderInputRef.current?.select();
+      }, 50);
+    }
+  }, [creatingFolder]);
+
+  // Storage info
+  useEffect(() => {
+    api.getStorageInfo().then(res => {
+      if (res.success) {
+        setUsedGB(res.usedGB);
+        setMaxGB(res.maxGB);
+        setPercent(parseInt(res.percent));
+      }
+    }).catch(e => console.error('storage info', e));
+  }, [tree]);
+
+  // Close context menu on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (contextMenuRef.current && !contextMenuRef.current.contains(e.target as Node))
+        setContextMenu(null);
+    };
+    if (contextMenu) document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [contextMenu]);
+
+  // Focus rename input
+  useEffect(() => {
+    if (renamingPath && renameInputRef.current) {
+      renameInputRef.current.focus();
+      renameInputRef.current.select();
+    }
+  }, [renamingPath]);
+
+  const toggleExpand = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleContextMenu = (e: React.MouseEvent, node: DirectoryNode) => {
+    e.preventDefault(); e.stopPropagation();
+    setContextMenu({ x: e.clientX, y: e.clientY, node });
+  };
+
+  const handleStartRename = (node: DirectoryNode) => {
+    setContextMenu(null);
+    setRenamingPath(node.path);
+    setRenameValue(node.name);
+  };
+
+  const handleRenameSubmit = async (node: DirectoryNode) => {
+    const newName = renameValue.trim();
+    if (newName && newName !== node.name) {
+      try {
+        await api.rename(node.path, newName);
+        onFolderRenamed?.(node.path, newName);
+      } catch (e: any) { alert('Đổi tên thất bại: ' + e.message); }
+    }
+    setRenamingPath(null);
+    setRenameValue('');
+  };
+
+  const handleRenameKeyDown = (e: React.KeyboardEvent, node: DirectoryNode) => {
+    if (e.key === 'Enter') handleRenameSubmit(node);
+    if (e.key === 'Escape') { setRenamingPath(null); setRenameValue(''); }
+  };
+
+  const handleDeleteFolder = async (node: DirectoryNode) => {
+    setContextMenu(null);
+    if (confirm(`Xóa thư mục "${node.name}" và toàn bộ nội dung?`)) {
+      try {
+        await api.delete([{ path: node.path }]);
+        onFolderDeleted?.(node.path);
+      } catch (e: any) { alert('Xóa thất bại: ' + e.message); }
+    }
+  };
+
+  // Inline new folder handlers
+  const handleNewFolderSubmit = () => {
+    const name = newFolderName.trim();
+    if (name) onConfirmCreate?.(name);
+    else onCancelCreate?.();
+  };
+
+  const handleNewFolderKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleNewFolderSubmit();
+    if (e.key === 'Escape') onCancelCreate?.();
+  };
+
+  // Current parent folder ID (for indentation of inline input)
+  const currentParentId = currentPath[currentPath.length - 1] ?? null;
+
+  const renderNode = (node: DirectoryNode, depth: number = 0) => {
+    const isDirectlySelected = currentPath[currentPath.length - 1] === node.path;
+    const isExpanded = expanded[node.path];
+    const hasChildren = node.children && node.children.length > 0;
+    const isRenaming = renamingPath === node.path;
+    // Show inline input inside this node if user is in this folder
+    const showInlineHere = creatingFolder && currentParentId === node.path;
+
+    return (
+      <div key={node.path} className="mt-0.5">
+        <div
+          onClick={() => !isRenaming && onNavigate(node.path)}
+          onContextMenu={(e) => handleContextMenu(e, node)}
+          className={`group flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer transition-all
+            ${isDirectlySelected ? 'bg-blue-50 text-blue-600 font-semibold border-l-2 border-blue-600 -ml-[1px]' : 'hover:bg-black/5 text-[#444]'}`}
+          style={{ paddingLeft: `${depth * 12 + 12}px` }}
+        >
+          <span
+            onClick={(e) => hasChildren && toggleExpand(node.path, e)}
+            className={`text-xs transition-transform inline-flex items-center justify-center w-4 h-4 ${isExpanded ? 'rotate-0' : '-rotate-90'} ${hasChildren ? 'opacity-40 cursor-pointer' : 'opacity-0'}`}
+          >
+            <DownOutlined />
+          </span>
+          {isExpanded
+            ? <FolderOpenFilled className={`text-base ${isDirectlySelected ? '!text-blue-500' : '!text-yellow-500'}`} />
+            : <FolderFilled className={`text-base ${isDirectlySelected ? '!text-blue-500' : '!text-yellow-500'}`} />
+          }
+
+          {isRenaming ? (
+            <input
+              ref={renameInputRef}
+              value={renameValue}
+              onChange={e => setRenameValue(e.target.value)}
+              onBlur={() => handleRenameSubmit(node)}
+              onKeyDown={e => handleRenameKeyDown(e, node)}
+              onClick={e => e.stopPropagation()}
+              className="text-sm flex-1 bg-white border border-blue-400 rounded px-1 py-0 outline-none min-w-0"
+            />
+          ) : (
+            <p className="text-sm truncate flex-1">{node.name}</p>
+          )}
+
+          {!isRenaming && (
+            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+              <Tooltip text="Đổi tên">
+                <button
+                  onClick={e => { e.stopPropagation(); handleStartRename(node); }}
+                  className="p-0.5 rounded hover:bg-black/10 text-[#888] hover:text-blue-600 transition-colors"
+                >
+                  <EditOutlined className="text-[13px]" />
+                </button>
+              </Tooltip>
+              <Tooltip text="Xóa thư mục">
+                <button
+                  onClick={e => { e.stopPropagation(); handleDeleteFolder(node); }}
+                  className="p-0.5 rounded hover:bg-black/10 text-[#888] hover:text-red-500 transition-colors"
+                >
+                  <DeleteOutlined className="text-[13px]" />
+                </button>
+              </Tooltip>
+            </div>
+          )}
+        </div>
+
+        {/* Children + inline input for this folder */}
+        {isExpanded && (hasChildren || showInlineHere) && (
+          <div>
+            {hasChildren && node.children.map(child => renderNode(child, depth + 1))}
+            {showInlineHere && <InlineFolderInput depth={depth + 1} ref={newFolderInputRef} value={newFolderName} onChange={setNewFolderName} onSubmit={handleNewFolderSubmit} onCancel={() => onCancelCreate?.()} onKeyDown={handleNewFolderKeyDown} />}
+          </div>
+        )}
+        {/* If this folder is selected but collapsed, expand it and show inline */}
+        {!isExpanded && showInlineHere && (
+          <div>
+            <InlineFolderInput depth={depth + 1} ref={newFolderInputRef} value={newFolderName} onChange={setNewFolderName} onSubmit={handleNewFolderSubmit} onCancel={() => onCancelCreate?.()} onKeyDown={handleNewFolderKeyDown} />
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
-    <div>
-      <div 
-        className={`group flex items-center py-2 px-3 mr-4 rounded-xl cursor-pointer transition-all ${
-          isActive 
-            ? 'bg-blue-50 text-blue-600 font-semibold' 
-            : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
-        }`}
-        style={{ paddingLeft: `${paddingLeft}px` }}
-      >
-        <div className="w-4 flex items-center justify-center mr-1">
-          {hasChildren ? (
-            node.isOpen ? <ChevronDownIcon className="w-3.5 h-3.5" /> : <ChevronRightIcon className="w-3.5 h-3.5" />
-          ) : null}
+    <>
+      <aside className="w-72 flex flex-col border-r border-[#f2f2f2] bg-white shrink-0 overflow-hidden">
+        <div className="flex-1 p-4">
+          <p className="px-3 text-[11px] font-bold text-[#757575] uppercase tracking-wider pb-4">Thư Mục</p>
+
+          <div className="flex flex-col gap-0.5">
+            {/* Root */}
+            <div
+              onClick={() => onNavigate(null)}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer group transition-all ${currentPath.length === 0 ? 'bg-[#f2f2f2]' : 'hover:bg-black/5'}`}
+            >
+              <DownOutlined className="text-xs opacity-30" />
+              <FolderFilled className="text-base !text-yellow-500" />
+              <p className="text-primary text-sm font-semibold truncate flex-1">Hình Ảnh</p>
+            </div>
+
+            <div className="border-l border-[#eee] ml-3">
+              {tree.map(node => renderNode(node, 0))}
+
+              {/* Inline input at ROOT level (when no folder is selected) */}
+              {creatingFolder && currentParentId === null && (
+                <InlineFolderInput
+                  depth={0}
+                  ref={newFolderInputRef}
+                  value={newFolderName}
+                  onChange={setNewFolderName}
+                  onSubmit={handleNewFolderSubmit}
+                  onCancel={() => onCancelCreate?.()}
+                  onKeyDown={handleNewFolderKeyDown}
+                />
+              )}
+            </div>
+          </div>
         </div>
-        <FolderIcon className={`w-4 h-4 mr-3 ${isActive ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'}`} filled={isActive} />
-        <span className="text-sm">{node.name}</span>
-      </div>
-      {node.isOpen && node.children && (
-        <div className="mt-1">
-          {node.children.map(child => (
-            <FolderTreeItem key={child.id} node={child} depth={depth + 1} />
-          ))}
+
+        {/* Storage - fixed at bottom */}
+        <div className="shrink-0 p-4 border-t border-[#f2f2f2]">
+          <div className="flex flex-col gap-2 p-3 bg-[#f9f9f9] rounded-xl">
+            <div className="flex justify-between items-center">
+              <p className="text-primary text-xs font-semibold">Lưu Trữ</p>
+              <p className="text-primary text-[11px] font-normal">{percent}%</p>
+            </div>
+            <div className="h-1.5 w-full rounded-full bg-[#e0e0e0] overflow-hidden">
+              <div className="h-full rounded-full bg-black transition-all duration-500" style={{ width: `${percent}%` }}></div>
+            </div>
+            <p className="text-[#757575] text-[10px] font-normal">{usedGB} GB / {maxGB} GB đã dùng</p>
+          </div>
+        </div>
+      </aside>
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <div
+          ref={contextMenuRef}
+          style={{ position: 'fixed', top: contextMenu.y, left: contextMenu.x, zIndex: 9999 }}
+          className="bg-white border border-[#e8e8e8] rounded-xl shadow-xl py-1.5 min-w-[160px] text-sm"
+        >
+          <button
+            onClick={() => handleStartRename(contextMenu.node)}
+            className="w-full flex items-center gap-2.5 px-4 py-2 hover:bg-[#f5f5f5] text-[#333] transition-colors"
+          >
+            <EditOutlined className="text-[16px] text-blue-500" />
+            Đổi tên
+          </button>
+          <div className="my-1 border-t border-[#f0f0f0]" />
+          <button
+            onClick={() => handleDeleteFolder(contextMenu.node)}
+            className="w-full flex items-center gap-2.5 px-4 py-2 hover:bg-red-50 text-red-500 transition-colors"
+          >
+            <DeleteOutlined className="text-[16px]" />
+            Xóa
+          </button>
         </div>
       )}
+    </>
+  );
+};
+
+// ─── Inline Folder Input Component ───────────────────────────────────────────
+interface InlineFolderInputProps {
+  depth: number;
+  value: string;
+  onChange: (v: string) => void;
+  onSubmit: () => void;
+  onCancel: () => void;
+  onKeyDown: (e: React.KeyboardEvent) => void;
+}
+
+const InlineFolderInput = React.forwardRef<HTMLInputElement, InlineFolderInputProps>(
+  ({ depth, value, onChange, onSubmit, onCancel, onKeyDown }, ref) => (
+    <div
+      className="flex items-center gap-2 mt-0.5 rounded-lg bg-blue-50 border border-blue-200"
+      style={{ paddingLeft: `${depth * 12 + 12}px`, paddingRight: '8px', paddingTop: '6px', paddingBottom: '6px' }}
+    >
+      <DownOutlined className="text-xs opacity-0" />
+      <FolderAddOutlined className="text-base !text-yellow-500 shrink-0" />
+      <input
+        ref={ref}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        onKeyDown={onKeyDown}
+        onBlur={onSubmit}
+        className="text-sm flex-1 bg-transparent border-none outline-none text-blue-700 font-medium min-w-0 placeholder:text-blue-300"
+        placeholder="Tên thư mục..."
+      />
+      <button
+        onMouseDown={e => { e.preventDefault(); onSubmit(); }}
+        className="shrink-0 p-0.5 rounded hover:bg-blue-200 text-blue-600 transition-colors"
+        title="Xác nhận"
+      >
+        <CheckOutlined className="text-[13px]" />
+      </button>
+      <button
+        onMouseDown={e => { e.preventDefault(); onCancel(); }}
+        className="shrink-0 p-0.5 rounded hover:bg-black/10 text-[#999] transition-colors"
+        title="Huỷ"
+      >
+        <CloseOutlined className="text-[13px]" />
+      </button>
     </div>
-  );
-};
-
-const Sidebar: React.FC = () => {
-  return (
-    <aside className="w-72 bg-white flex flex-col h-full shrink-0">
-      <div className="flex-1 overflow-y-auto py-6">
-        <div className="px-6 mb-4">
-          <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em]">Directories</h3>
-        </div>
-        <nav className="space-y-1">
-          {MOCK_FOLDERS.map(folder => (
-            <FolderTreeItem key={folder.id} node={folder} depth={0} />
-          ))}
-        </nav>
-      </div>
-
-      <div className="p-6 border-t border-gray-100">
-        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-          <div className="flex justify-between items-end mb-3">
-            <span className="text-xs font-semibold text-gray-900">Storage</span>
-            <span className="text-[10px] font-bold text-blue-600">72%</span>
-          </div>
-          <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden mb-3">
-            <div className="h-full bg-blue-500 rounded-full" style={{ width: '72%' }}></div>
-          </div>
-          <p className="text-[10px] text-gray-400 font-medium">3.6 GB of 5 GB used</p>
-        </div>
-      </div>
-    </aside>
-  );
-};
+  )
+);
+InlineFolderInput.displayName = 'InlineFolderInput';
 
 export default Sidebar;

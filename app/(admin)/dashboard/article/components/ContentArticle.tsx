@@ -17,7 +17,7 @@ import {
   Spin,
 } from "antd";
 import type { UploadFile } from "antd/es/upload/interface";
-import { ReloadOutlined, UploadOutlined } from "@ant-design/icons";
+import { ReloadOutlined, UploadOutlined ,CloseOutlined} from "@ant-design/icons";
 import PublishInfoForm from "./PublishInfoForm";
 import { Post } from "@/types/contentItem";
 import { getBase64, removeVietnameseTones } from "../../../../../utils/util";
@@ -82,23 +82,23 @@ const ContentArticle: React.FC<typeContentArticle> = ({
   }, [reset, form]);
 
   const reloadPage = () => {
-    setTypeModal({
-      typeModal: 4,
-      openModal: false,
-    });
-    form.resetFields();
-    setEditorData("");
-    setIntrotext("");
-    setImageUrl(null);
-    setFileList([]);
-    setUrlFile({});
+    // setTypeModal({
+    //   typeModal: 4,
+    //   openModal: false,
+    // });
+    // form.resetFields();
+    // setEditorData("");
+    // setIntrotext("");
+    // setImageUrl(null);
+    // setFileList([]);
+    // setUrlFile({});
     setOnReload();
   };
 
   // ✅ FIXED: onFinish dùng introtext state
   const onFinish = async (values: any) => {
     try {
-      console.log(values)
+      // console.log(values)
       const formData = {
         ...values,
         picture: '',
@@ -449,6 +449,17 @@ const ContentArticle: React.FC<typeContentArticle> = ({
                   }}
                 >
                   Reset trắng bài viết
+                </Button>
+                <Button
+               danger
+               icon={<CloseOutlined />}
+                onClick ={()=>
+                  setTypeModal({
+                    typeModal: 4,
+                    openModal: false,
+                  })
+                }>
+                  Đóng
                 </Button>
               </Space>
 

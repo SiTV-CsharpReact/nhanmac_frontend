@@ -1,622 +1,387 @@
-"use client";
-import { env } from '@/config/env';
-import { removeVietnameseTones } from '@/utils/util';
-import { CheckOutlined } from '@ant-design/icons';
-import { message, Modal, Input, Button, Tooltip } from 'antd';
-import { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import Header from './components/Header';
+import Sidebar from './components/Sidebar';
+import AssetGrid from './components/AssetGrid';
+import { Asset, DirectoryNode } from './types';
+import { api, BackendFile, BackendFolder, TreeItem } from './api';
+import {
+  HomeOutlined, RightOutlined, AppstoreOutlined, UnorderedListOutlined,
+  CloseSquareOutlined, DeleteOutlined, CheckCircleFilled,
+} from '@ant-design/icons';
+import './FM.css'
+import { notification } from 'antd';
 
-interface FileItem {
-  name: string;
-  url: string;
-  size: number;
-  path: string;
-}
-
-interface FolderItem {
-  name: string;
-  path: string;
-}
-
-interface ApiResponse {
-  folders: FolderItem[];
-  files: FileItem[];
-  currentFolder: string;
-}
-
-export default function FileManager({
-  onSelect,
-  onClose,
-  currentFolder = ''
-}: {
-  onSelect: (url: string, name: string) => void;
+interface FileManager {
+  onSelect:(url:string | undefined ,name:string)=>void;
   onClose: () => void;
-  currentFolder?: string;
-}) {
-  const [data, setData] = useState<ApiResponse>({
-    folders: [],
-    files: [],
-    currentFolder: ''
+}
+const notifySuccess = (msg: string) => {
+  notification.success({
+    message: 'Thành công',
+    description: msg,
+    placement: 'bottomRight'
   });
-  const [currentPath, setCurrentPath] = useState(currentFolder);
-  const [loading, setLoading] = useState(false);
-  const [renamingPath, setRenamingPath] = useState<string | null>(null);
-  const [renameValue, setRenameValue] = useState('');
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [newFolderName, setNewFolderName] = useState('');
-  const [creating, setCreating] = useState(false);
-  const [searchKeyword, setSearchKeyword] = useState('');
-  const [searching, setSearching] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const didFetch = useRef(false);
-  const didInitialFetch = useRef(false);
+};
 
-  /* ================= FETCH ================= */
-  const fetchData = useCallback(async (folder: string) => {
-    if (loading) return;
-    setLoading(true);
+const notifyError = (msg: string) => {
+  notification.error({
+    message: 'Lỗi',
+    description: msg,
+    placement: 'bottomRight'
+  });
+};
+const FileManager: React.FC<FileManager> = ({onSelect,
+  onClose,
+  // currentFolder = ''
+}) => {
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [currentFolderId, setCurrentFolderId] = useState<string>(''); // Empty string for root
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [sidebarTree, setSidebarTree] = useState<DirectoryNode[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [creatingFolder, setCreatingFolder] = useState(false);
+
+  // Helper to convert BackendFolder/File to Asset
+  const mapToAsset = (item: BackendFile | BackendFolder, type: 'folder' | 'image', parentPath: string): Asset => ({
+    id: item.path, // Use path as ID
+    name: item.name,
+    type,
+    parentId: parentPath,
+    size: (item as BackendFile).size,
+    url: (item as BackendFile).url,
+    itemsCount: 0 // Backend doesn't provide this yet
+  });
+
+  // Fetch Sidebar Tree
+  const fetchTree = useCallback(async () => {
     try {
-      const res = await fetch(
-        `${env.apiUrl}/folders/list?folder=${encodeURIComponent(folder)}`
-      );
-      const json = await res.json();
-      setData(json);
-      setCurrentPath(json.currentFolder || '');
+      const treeData = await api.getTree();
+      // Map TreeItem to DirectoryNode if needed, or match types
+      // TreeItem matches DirectoryNode structure roughly
+      setSidebarTree(treeData as unknown as DirectoryNode[]);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to fetch tree:', err);
+    }
+  }, []);
+
+  // Fetch Assets for current folder
+  const fetchAssets = useCallback(async (folderPath: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await api.list(folderPath);
+
+      const folderAssets = res.folders.map(f => mapToAsset(f, 'folder', folderPath));
+      const fileAssets = res.files.map(f => mapToAsset(f, 'image', folderPath));
+
+      setAssets([...folderAssets, ...fileAssets]);
+
+    } catch (err) {
+      console.error('Failed to fetch assets:', err);
+      setError('Failed to load folder contents');
     } finally {
       setLoading(false);
     }
-  }, [loading]);
+  }, []);
 
+  // Sync when folder changes
   useEffect(() => {
-    if (didFetch.current) return;
-    didFetch.current = true;
-  
-    fetchData(currentFolder);
-  }, [fetchData, currentFolder]);
-
-  /* ================= ACTIONS ================= */
-  const goToFolder = (path: string) => fetchData(path);
-
-  const goBack = () => {
-    if (!currentPath) {
-      message.error('Không thể trở về');
-      return;
+    if (!searchQuery) {
+      fetchAssets(currentFolderId);
     }
-    const parent = currentPath.split('/').slice(0, -1).join('/');
-    fetchData(parent);
+  }, [currentFolderId, fetchAssets, searchQuery]);
+
+  // Initial load
+  useEffect(() => {
+    fetchTree();
+  }, [fetchTree]);
+
+  // Search
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      setLoading(true);
+      api.search(searchQuery, currentFolderId)
+        .then(res => {
+          const fileAssets = res.files.map((f: BackendFile) => mapToAsset(f, 'image', 'search_result'));
+          setAssets(fileAssets);
+        })
+        .catch(err => {
+          console.error("Search error", err);
+          setError("Search failed");
+        })
+        .finally(() => setLoading(false));
+    } else {
+      fetchAssets(currentFolderId);
+    }
+  }, [searchQuery, currentFolderId, fetchAssets]);
+
+
+  // Breadcrumb path calculation
+  const currentPath = useMemo(() => {
+    if (!currentFolderId) return [];
+    // path parts
+    const parts = currentFolderId.split('/').filter(Boolean);
+    const path: string[] = [];
+    let current = '';
+
+    return parts.map(part => {
+      current = current ? `${current}/${part}` : part;
+      return current;
+    });
+  }, [currentFolderId]);
+
+  const breadcrumbs = useMemo(() => {
+    if (!currentFolderId) return [];
+
+    const parts = currentFolderId.split('/').filter(Boolean);
+    let accumulatedPath = '';
+
+    return parts.map(part => {
+      accumulatedPath = accumulatedPath ? `${accumulatedPath}/${part}` : part;
+      return {
+        id: accumulatedPath,
+        name: part,
+        type: 'folder' as const,
+        parentId: null // Not needed for breadcrumb display
+      };
+    });
+  }, [currentFolderId]);
+
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const handleNavigate = (folderId: string | null) => {
+    setCurrentFolderId(folderId || '');
+    setSearchQuery('');
+    setSelectedIds(new Set()); // Clear selection on navigation
   };
 
-  const searchFiles = useCallback(async (keyword: string) => {
-    if (!keyword.trim()) {
-      if (didInitialFetch.current) return;  // ✅ Không fetch nếu đã load lần đầu
-      fetchData(currentPath);
-      didInitialFetch.current = true;
-      return;
-    }
-
-    try {
-      setSearching(true);
-
-      const res = await fetch(
-        `${env.apiUrl}/folders/search?keyword=${removeVietnameseTones(
-          keyword
-        )}&folder=${removeVietnameseTones(currentPath)}`
-      );
-
-      const result = await res.json();
-
-      if (res.ok) {
-        setData(prev => ({
-          ...prev,
-          files: result.files || []
-        }));
+  const handleToggleSelection = (id: string, multiSelect: boolean) => {
+    setSelectedIds(prev => {
+      const newSet = new Set(multiSelect ? prev : []);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
       }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setSearching(false);
+      return newSet;
+    });
+  };
+
+  const handleBatchDelete = async () => {
+    if (selectedIds.size === 0) return;
+
+    if (confirm(`Bạn có chắc muốn xóa ${selectedIds.size} mục?`)) {
+      try {
+        const itemsToDelete = Array.from(selectedIds).map(id => ({ path: id }));
+        await api.delete(itemsToDelete);
+        notifySuccess(`Đã xóa ${selectedIds.size} mục`);
+        setSelectedIds(new Set());
+        fetchAssets(currentFolderId);
+        fetchTree();
+      } catch (e: any) {
+        notifyError('Xóa hàng loạt thất bại: ' + e.message);
+      }
     }
-  }, [currentPath, fetchData]);
-  useEffect(() => {
-    if (!searchKeyword.trim()) return;  // ✅ Skip empty search
-    
-    const timeout = setTimeout(() => {
-      searchFiles(searchKeyword);
-    }, 500);
-    return () => clearTimeout(timeout);
-  }, [searchKeyword, searchFiles]);
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (!files.length) return;
+  };
 
-    // ✅ CHẶN FILE > 5MB TRƯỚC KHI GỬI
-    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-    const invalidFiles = files.filter(f => f.size > MAX_SIZE);
 
-    if (invalidFiles.length > 0) {
-      message.error(
-        `${invalidFiles.map(f => f.name).join(', ')} vượt quá 5MB!`
-      );
-      e.target.value = ''; // Reset input
-      return;
-    }
+  const handleCreateFolder = () => {
+    setCreatingFolder(true);
+  };
 
-    const form = new FormData();
-    files.forEach(f => form.append('files', f));
-    form.append('folder', currentPath);
-
+  const handleConfirmCreateFolder = async (name: string) => {
+    setCreatingFolder(false);
     try {
-      // setCreating(true); // Loading state
-      const res = await fetch(
-        `${env.apiUrl}/folders/upload?folder=${encodeURIComponent(currentPath)}`,
-        {
-          method: 'POST',
-          body: form
+      await api.createFolder(name, currentFolderId);
+      notifySuccess('Tạo folder thành công');
+
+      fetchAssets(currentFolderId);
+      fetchTree();
+    } catch (e: any) {
+      notifySuccess('Tạo folder thành công');
+
+    }
+  };
+
+  const handleUpload = () => {
+    // This will be handled by Header triggering a click on hidden input
+    // We need to pass the actual handler 'onFilesSelected' to Header
+  };
+
+  const onFilesSelected = async (files: File[]) => {
+    try {
+      await api.upload(files, currentFolderId);
+      fetchAssets(currentFolderId);
+      notifySuccess('Upload file thành công');
+    } catch (e: any) {
+      notifyError('Upload thất bại: ' + e.message);
+    }
+  };
+
+  const handleAssetAction = async (id: string, action: 'delete' | 'edit') => {
+    if (action === 'delete') {
+      if (confirm('Bạn có chắc muốn xóa ảnh này?')) {
+        try {
+          await api.delete([{ path: id }]);
+          notifySuccess('Xóa file thành công');
+          fetchAssets(currentFolderId);
+          fetchTree();
+        } catch (e: any) {
+          notifyError('Xóa thất bại: ' + e.message);
         }
-      );
-
-      if (!res.ok) {
-        const error = await res.json();
-        message.error(error.message || 'Upload thất bại!');
-        return;
       }
-
-      message.success('Upload thành công!');
-    } catch (error) {
-      message.error('Lỗi kết nối!');
-      console.error('Upload error:', error);
-    } finally {
-      // setCreating(false);
-      e.target.value = '';
-      fetchData(currentPath);
     }
   };
 
-  const createFolder = async () => {
-    if (!newFolderName.trim()) {
-      message.warning('Vui lòng nhập tên thư mục');
-      return;
-    }
-
-    try {
-      setCreating(true);
-
-      const res = await fetch(`${env.apiUrl}/folders/create`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          parent: currentPath,
-          name: newFolderName.trim()
-        })
-      });
-
-      const result = await res.json();
-
-      if (!res.ok) {
-        message.error(result.error || 'Tạo thư mục thất bại');
-        return;
-      }
-
-      message.success('Tạo thư mục thành công 🎉');
-      setIsCreateOpen(false);
-      fetchData(currentPath);
-    } catch (err) {
-      message.error('Lỗi server');
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  const submitRename = async () => {
-    console.log('submitRename called');
-    if (!renamingPath || !renameValue.trim()) {
-      setRenamingPath(null);
-      return;
-    }
-
-    try {
-      const res = await fetch(`${env.apiUrl}/folders/rename`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          oldPath: renamingPath,
-          newName: renameValue.trim()
-        })
-      });
-
-      const result = await res.json();
-
-      if (!res.ok) {
-        message.error(result.error || 'Đổi tên thư mục thất bại');
-        return;
-      }
-
-      message.success('Đổi tên thư mục thành công 🎉');
-
-      setRenamingPath(null);
-      fetchData(currentPath);
-    } catch (err) {
-      console.error(err);
-      message.error('Lỗi server');
-    }
-  };
-
-
-  const handleDelete = async (path: string) => {
-    if (!confirm('Bạn chắc chắn muốn xóa?')) return;
-
-    try {
-      const res = await fetch(`${env.apiUrl}/folders/delete`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: [{ path }]
-        })
-      });
-
-      const result = await res.json();
-
-      if (!res.ok) {
-        message.error(result.error || 'Xóa thất bại');
-        return;
-      }
-
-      message.success('Đã xóa thành công');
-      fetchData(currentPath);
-    } catch (err) {
-      console.error(err);
-      message.error('Lỗi server');
-    }
-  };
-
-
-
-  /* ================= RENDER ================= */
   return (
     <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center">
-      <div
-        className="bg-white max-w-7xl  h-[90vh] rounded-xl shadow-2xl flex flex-col"
-        onClick={e => e.stopPropagation()}
-        onMouseDown={(e) => {
-          e.stopPropagation();
-          e.preventDefault();
-        }}
-      >
-        {/* ===== Toolbar ===== */}
-        <div className="h-14 border-b border-gray-200 flex items-center justify-between px-4 text-sm bg-gradient-to-r from-gray-50 to-white">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setNewFolderName('');
-                setIsCreateOpen(true);
-              }}
-              className="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-blue-50 hover:text-blue-600 hover:shadow-md border border-gray-200 transition-all duration-200 flex items-center gap-2"
-            >
-              📁 Thêm thư mục
-            </button>
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                fileInputRef.current?.click()
-              }}
-              className="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-green-50 hover:text-green-600 hover:shadow-md border border-gray-200 transition-all duration-200 flex items-center gap-2"
-            >
-              ⬆ Thêm ảnh
-            </button>
+     <div className="w-full max-w-[1400px] min-w-[1400px] h-[860px] bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-white/20 ring-1 ring-black/5">
+      <Header
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        onCreateFolder={handleCreateFolder}
+        onUpload={() => { }} // Header should handle the click, we pass handler via onFilesSelected
+        onFilesSelected={onFilesSelected}
+        onClose={onClose}
+      />
 
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                goBack();
-              }}
-              disabled={!currentPath}
-              className="px-3 py-2 rounded-lg text-sm font-medium disabled:text-gray-400 disabled:cursor-not-allowed disabled:bg-gray-100 bg-white hover:bg-gray-50 hover:text-gray-800 hover:shadow-sm border border-gray-200 transition-all duration-200 flex items-center gap-2 disabled:border-gray-300"
-            >
-              ← Trở về
-            </button>
-          </div>
-          <div className="relative w-72">
-            <Input
-              size="middle"
-              placeholder="🔍 Tìm ảnh trong thư mục..."
-              value={searchKeyword}
-              onChange={e => setSearchKeyword(e.target.value)}
-              allowClear
-              className="rounded-xl"
-            />
-
-            {searching && (
-              <div className="absolute right-3 top-2 text-gray-400 animate-spin">
-                ⏳
-              </div>
-            )}
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-full hover:bg-red-50 hover:text-red-600 transition-all duration-200 text-xl font-bold ml-auto"
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* ===== Body ===== */}
-        <div className="flex flex-1 overflow-hidden">
-          {/* Sidebar */}
-          <aside className="w-64 border-r border-gray-200 p-4 overflow-y-auto text-sm bg-gradient-to-b from-white to-gray-50">
-            <div className="font-semibold mb-4 text-lg text-gray-800 pb-2 border-b border-gray-200">
-              📁 {currentPath || 'Root'}
-            </div>
-
-            {data.folders.map(folder => (
-
-
-              <div
-                key={folder.path}
-                onClick={() => {
-                  if (renamingPath) return; // đang rename thì không cho navigate
-                  goToFolder(folder.path);
-                }}
-                className="group px-3 py-2 rounded-xl cursor-pointer hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 mb-1 font-medium flex items-center justify-between shadow-sm hover:shadow-md"
-              >
-                {/* LEFT: folder name */}
-                <div className="flex items-center gap-2 truncate">
-                  📁 {renamingPath === folder.path ? (
-                    <input
-                      autoFocus
-                      value={renameValue}
-                      onClick={e => e.stopPropagation()}
-                      onChange={e => setRenameValue(e.target.value)}
-                      // onBlur={() => setRenamingPath(null)}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter') submitRename();
-                        if (e.key === 'Escape') setRenamingPath(null);
-                      }}
-                      className="border px-2 py-1 rounded text-sm w-full"
-                    />
-                  ) : (
-                    <span className="truncate">{folder.name}</span>
-                  )}
-                </div>
-
-                {/* RIGHT: actions */}
-
-                <div className="flex items-center gap-1">
-                  {renamingPath === folder.path ? (
-                    <>
-                      {/* SAVE BUTTON */}
-                      <Button
-                        icon={<CheckOutlined />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          submitRename();
-                        }}
-                        className="group relative flex items-center justify-center !w-6 !h-6 !ml-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg hover:shadow-xl border border-green-400/50 hover:border-green-500/80 rounded-xl transition-all duration-200 hover:scale-110 hover:rotate-0 active:scale-95 active:rotate-180 transform-gpu backdrop-blur-sm hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-green-400/50 focus:ring-offset-1 focus:ring-offset-white ml-1"
-                      />
-
-
-                    </>
-                  ) : (
-                    <div className="opacity-0 group-hover:opacity-100 flex gap-1 transition-all">
-                      {/* RENAME */}
-                      <button
-                        onClick={e => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          setRenamingPath(folder.path);
-                          setRenameValue(folder.name);
-                        }}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg text-xs hover:bg-yellow-100 hover:text-yellow-600"
-                        title="Đổi tên"
-                      >
-                        ✏️
-                      </button>
-
-                      {/* DELETE */}
-                      <button
-                        onClick={e => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          handleDelete(folder.path);
-                        }}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg text-xs hover:bg-red-100 hover:text-red-600"
-                        title="Xóa folder"
-                      >
-                        🗑
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-              </div>
-
-            ))}
-          </aside>
-
-
-          {/* Content */}
-          <main className="flex-1 p-6 overflow-y-auto">
-            {loading ? (
-              <div className="text-center py-20 flex flex-col items-center">
-                <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin mb-4"></div>
-                <div className="text-lg font-medium text-gray-600">Đang tải...</div>
-              </div>
-            ) : (
-              data.files.length === 0 ? <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-gray-300 rounded-3xl bg-gradient-to-br from-gray-50 to-blue-50 hover:border-blue-300 transition-all duration-300">
-                <div className="w-24 h-24 bg-gradient-to-br from-gray-200 to-gray-300 rounded-3xl flex items-center justify-center mb-6 shadow-xl">
-                  <span className="text-3xl opacity-60">🖼️</span>
-                </div>
-                <h3 className="text-xl font-bold text-gray-700 mb-2">Chưa có ảnh</h3>
-                <p className="text-gray-500 text-sm max-w-md text-center leading-relaxed">
-                  📁 Nhấn "Thêm ảnh" ở toolbar để upload hình ảnh vào thư mục này
-                </p>
-                <div className="mt-6 text-xs text-gray-400 bg-white/60 px-4 py-2 rounded-xl border">
-                  💡 Hỗ trợ JPG, PNG, WEBP (tối đa 5MB/file)
-                </div>
-              </div>
-                :
-                <>
-                  {searchKeyword && (
-                    <div className="mb-4 text-sm text-gray-500 bg-blue-50 px-4 py-2 rounded-xl border border-blue-100">
-                      🔎 Kết quả cho: <b className="text-blue-600">{searchKeyword}</b>
-                      <span className="ml-2 text-gray-400">
-                        ({data.files.length} ảnh)
-                      </span>
-                    </div>
-                  )}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-
-                    {
-                      data.files.map(file => (
-                        <div
-                          key={file.path}
-                          className="group relative cursor-pointer select-none transition-all duration-300 rounded-2xl hover:bg-gray-50"
-                        >
-                          {/* IMAGE */}
-                          <div
-                            onClick={() => onSelect(file.url, file.name)}
-                            className="aspect-[4/3] rounded-2xl overflow-hidden mb-2 relative border-2 transition-all duration-500 shadow-sm group-hover:shadow-xl border-transparent bg-gray-50 group-hover:border-blue-200"
-                          >
-                            <div className="w-full h-full relative overflow-hidden">
-                              <img
-                                src={file.url}
-                                alt={file.name}
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                              />
-
-                              {/* DELETE BUTTON */}
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDelete(file.path);
-                                }}
-                                className="
-absolute top-2 right-2 z-30
-opacity-0 group-hover:opacity-100
-transition-opacity duration-200
-
-w-8 h-8
-rounded-full
-flex items-center justify-center
-
-bg-white/40 backdrop-blur-md
-border border-white/50
-shadow-md
-
-text-red-500
-hover:bg-red-500
-hover:text-white
-"
-                              >
-                                🗑
-                              </button>
-
-
-
-                              {/* Overlay */}
-                              <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-0" />
-
-                            </div>
-                          </div>
-
-                          {/* INFO */}
-                          <div className="px-2 pb-2">
-                            <h4 className="text-sm font-bold truncate">
-                              {file.name}
-                            </h4>
-                            <div className="flex items-center text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                              <span>{(file.size / 1024).toFixed(1)} KB</span>
-                            </div>
-                          </div>
-                        </div>
-                      ))
-
-                    }
-                  </div>
-                </>
-
-            )}
-          </main>
-        </div>
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          accept="image/*"
-          className="hidden"
-          onChange={handleUpload}
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar
+          assets={assets}
+          tree={sidebarTree}
+          currentPath={currentPath}
+          onNavigate={handleNavigate}
+          onFolderRenamed={(_oldPath, _newName) => { fetchTree(); fetchAssets(currentFolderId); }}
+          onFolderDeleted={(path) => { fetchTree(); if (currentFolderId === path || currentFolderId.startsWith(path + '/')) { handleNavigate(null); } else { fetchAssets(currentFolderId); } }}
+          creatingFolder={creatingFolder}
+          onConfirmCreate={handleConfirmCreateFolder}
+          onCancelCreate={() => setCreatingFolder(false)}
         />
 
-
-
-      </div>
-      <Modal
-        open={isCreateOpen}
-        onOk={createFolder}
-        onCancel={() => setIsCreateOpen(false)}
-        confirmLoading={creating}
-        okText="Tạo"
-        cancelText="Hủy"
-        centered
-        width={420}
-        styles={{
-          content: {
-            borderRadius: 20,
-            padding: 24
-          },
-          body: {
-            padding: 12  // 👈 padding chính ở đây
-          },
-          header: {
-            borderBottom: 'none'
-          },
-          footer: {
-            padding: 12,
-            borderTop: 'none'
-          }
-        }}
-        okButtonProps={{
-          className:
-            "bg-blue-600 hover:bg-blue-700 border-none rounded-xl px-6 h-10 font-medium"
-        }}
-        cancelButtonProps={{
-          className:
-            "rounded-xl px-6 h-10 font-medium"
-        }}
-      >
-        <div className="space-y-5">
-          {/* Header custom */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-blue-100 text-blue-600 text-lg">
-              📁
+        <main className="flex-1 flex flex-col bg-white overflow-hidden">
+          {/* Main Controls Header */}
+          <div className="flex items-center justify-between px-6 py-1 border-b border-[#f2f2f2] bg-white sticky top-0 z-20">
+            <div className="flex items-center gap-2 overflow-hidden">
+              <button
+                onClick={(e)=>{
+                  e.stopPropagation();
+                  e.preventDefault();
+                  handleNavigate(null)}}
+                className="text-[#757575] text-sm font-medium hover:text-black flex items-center gap-1 shrink-0"
+              >
+                <HomeOutlined className="text-base" />
+                Home
+              </button>
+              {breadcrumbs.map((folder, idx) => (
+                <React.Fragment key={folder.id}>
+                  <RightOutlined className="text-xs text-[#ccc] shrink-0" />
+                  <button
+                    onClick={() => handleNavigate(folder.id)}
+                    className={`text-sm truncate ${idx === breadcrumbs.length - 1 ? 'text-black font-bold' : 'text-[#757575] font-medium hover:text-black'}`}
+                  >
+                    {folder.name}
+                  </button>
+                </React.Fragment>
+              ))}
+              {searchQuery && (
+                <>
+                  <RightOutlined className="text-xs text-[#ccc] shrink-0" />
+                  <span className="text-blue-600 text-sm font-bold truncate">Tìm kiếm: "{searchQuery}"</span>
+                </>
+              )}
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-800">
-                Tạo thư mục mới
-              </h3>
 
+            <div className="flex items-center gap-6 shrink-0">
+              <p className="text-xs text-[#757575] font-medium">Hiển thị {assets.filter(a => a.type === 'image').length} ảnh</p>
+              {/* <div className="flex items-center bg-[#f2f2f2] rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`flex items-center justify-center w-8 h-8 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-black' : 'text-[#757575] hover:text-black'}`}
+                >
+                  <AppstoreOutlined className="text-base leading-none" />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`flex items-center justify-center w-8 h-8 rounded-md transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-black' : 'text-[#757575] hover:text-black'}`}
+                >
+                  <UnorderedListOutlined className="text-base leading-none" />
+                </button>
+              </div> */}
             </div>
           </div>
 
-          {/* Input */}
-          <Input
-            autoFocus
-            size="large"
-            placeholder="Ví dụ: Hình ảnh sản phẩm"
-            value={newFolderName}
-            onChange={e => setNewFolderName(e.target.value)}
-            onPressEnter={createFolder}
-            className="rounded-xl h-11"
-          />
-        </div>
-      </Modal>
-    </div>
+          {/* Grid View */}
+          <div className="flex-1 overflow-y-auto px-6 py-6">
+            {loading ? (
+              <div className="flex items-center justify-center h-full text-gray-400">Đang tải...</div>
+            ) : error ? (
+              <div className="flex items-center justify-center h-full text-red-500">{error}</div>
+            ) : (
+              <AssetGrid
+                assets={assets}
+                viewMode={viewMode}
+                selectedIds={selectedIds}
+                onNavigate={handleNavigate}
+                onAssetAction={handleAssetAction}
+                onToggleSelection={handleToggleSelection}
+                onTestSelect={onSelect}
+              />
+            )}
 
+          </div>
+
+          {/* Footer Bar */}
+          <footer className="h-12 border-t border-[#f2f2f2] flex items-center justify-between px-8 bg-[#fcfcfc] shrink-0">
+            <div className="flex items-center gap-4">
+              {selectedIds.size > 0 ? (
+                <>
+                  <p className="text-[10px] text-blue-600 font-bold uppercase tracking-[0.15em]">{selectedIds.size} đã chọn</p>
+                  <div className="h-3 w-[1px] bg-[#e5e5e5]"></div>
+                  <button
+                  onClick={(e)=>{
+                    e.stopPropagation();
+                    e.preventDefault();
+                    setSelectedIds(new Set())}}
+    
+                    className="text-xs !text-[#757575] font-semibold hover:text-black flex items-center gap-1"
+                  >
+                    <CloseSquareOutlined className="text-sm" />
+                    Bỏ chọn tất cả
+                  </button>
+                  <div className="h-3 w-[1px] bg-[#e5e5e5]"></div>
+                  <button
+                   onClick={(e)=>{
+                    e.stopPropagation();
+                    e.preventDefault();
+                    handleBatchDelete()}}
+                    // onClick={handleBatchDelete}
+                    className="text-xs !text-red-500 font-semibold hover:text-red-700 flex items-center gap-1"
+                  >
+                    <DeleteOutlined className="text-sm" />
+                    Xóa mục đã chọn
+                  </button>
+
+                </>
+              ) : (
+                <>
+                  <p className="text-[10px] text-[#757575] font-bold uppercase tracking-[0.15em]">{assets.length} mục</p>
+                  <div className="h-3 w-[1px] bg-[#e5e5e5]"></div>
+                  <p className="text-[11px] text-[#757575] font-medium">Đã đồng bộ với Server</p>
+                </>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircleFilled className="text-sm !text-green-500" />
+              <p className="text-[11px] text-[#757575] font-semibold">Kết nối Server</p>
+            </div>
+          </footer>
+        </main>
+      </div>
+    </div>
+    </div>
   );
-}
+};
+
+export default FileManager;
