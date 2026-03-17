@@ -42,7 +42,7 @@ export default function PublishInfoForm({ form }: { form: any }) {
             format="DD/MM/YYYY HH:mm:ss"
             style={{ width: "100%" }}
             placeholder="Chọn ngày giờ xuất bản"
-            defaultValue={dayjs()}
+         
           />
         </Form.Item>
         <Form.Item label="Ngày tạo" name="created">
@@ -51,7 +51,7 @@ export default function PublishInfoForm({ form }: { form: any }) {
             format="DD/MM/YYYY HH:mm:ss"
             style={{ width: "100%" }}
             placeholder="Chọn ngày gian tạo"
-            defaultValue={dayjs()}
+         
           />
         </Form.Item>
         <Form.Item label="Ngày chỉnh sửa" name="modified">
@@ -60,7 +60,7 @@ export default function PublishInfoForm({ form }: { form: any }) {
             format="DD/MM/YYYY HH:mm:ss"
             style={{ width: "100%" }}
             placeholder="Chọn ngày chỉnh sửa"
-            defaultValue={dayjs()}
+         
           />
         </Form.Item>
 

@@ -9,7 +9,7 @@ import { DeleteIcon, EditIcon } from "@/components/icons/Icons";
 import { useCategories } from "@/hooks/useCategories";
 const { Option } = Select;
 
-import { removeVietnameseTones } from "../../../../utils/util";
+import { removeVietnameseTonesBase } from "../../../../utils/util";
 // console.log(React.version);
 // Hàm chuyển mảng phẳng thành tree
 
@@ -114,7 +114,7 @@ export default function CategoryTable() {
       const categoryData = {
         name: values.name,
         title: values.title,
-        alias: values.alias || removeVietnameseTones(values.title),
+        alias: values.alias || removeVietnameseTonesBase(values.title),
         section: values.section|| 0,
         published: values.published,
       };
@@ -154,7 +154,7 @@ export default function CategoryTable() {
 
     setLoadingAlias(true);
     const handler = setTimeout(() => {
-      const converted = removeVietnameseTones(title);
+      const converted = removeVietnameseTonesBase(title);
       setAlias(converted);
       form.setFieldsValue({ alias: converted });
       setLoadingAlias(false);

@@ -98,15 +98,23 @@ const ContentArticle: React.FC<typeContentArticle> = ({
   // ✅ FIXED: onFinish dùng introtext state
   const onFinish = async (values: any) => {
     try {
-      // console.log(values)
+      console.log(values)
       const formData = {
         ...values,
         picture: '',
         alias: values?.alias?.replaceAll("_", "-"),
         introtext: introtext,
-        created: values?.created,
-        publish_up: values?.publish_up,
-        modified: values?.modified,
+        created: values?.created
+          ? values.created.format("YYYY-MM-DD HH:mm:ss")
+          : null,
+
+        publish_up: values?.publish_up
+          ? values.publish_up.format("YYYY-MM-DD HH:mm:ss")
+          : null,
+
+        modified: values?.modified
+          ? values.modified.format("YYYY-MM-DD HH:mm:ss")
+          : null,
         title_alias: values?.title,
         urls: urlFile?.pictureUrl,
         images: urlFile?.pictureName
@@ -218,12 +226,11 @@ const ContentArticle: React.FC<typeContentArticle> = ({
         form={form}
         layout="vertical"
         onFinish={onFinish}
-        // onClick={(e) => {
-        //   // Ngăn submit khi click vào FileManager
-        //   if (e.target.closest('.ant-upload') || e.target.closest('[class*="file-manager"]')) {
-        //     e.stopPropagation();
-        //   }
-        // }}
+        initialValues={{
+          publish_up: dayjs(),
+          created: dayjs(),
+          modified: dayjs(),
+        }}
         className="[&_.ant-form-item]:!mb-[10px]"
       >
         <div

@@ -114,7 +114,7 @@ export function parseSlug(slug: string) {
 //     .toLowerCase();
 // };
 
-export const removeVietnameseTones = (str: string): string => {
+export const removeVietnameseTonesBase = (str: string): string => {
     // ✅ LIBRARY decode HTML entities - XỬ LÝ HẾT!
     str = decode(str);  // nh&atilde;n → nhãn, m&aacute;c → mác
     
@@ -133,6 +133,30 @@ export const removeVietnameseTones = (str: string): string => {
             .replace(/đ/g, "d")
             .replace(/Đ/g, "D")
             .replace(/\s+/g, "-") // Thay toàn bộ dấu cách bằng "_"
+            // .replace(/[^\w\-\.]/g, '');     // Loại các ký tự đặc biệt còn lại, trừ _ - .
+            .toLowerCase()
+    );
+};
+
+export const removeVietnameseTones = (str: string): string => {
+    // ✅ LIBRARY decode HTML entities - XỬ LÝ HẾT!
+    str = decode(str);  // nh&atilde;n → nhãn, m&aacute;c → mác
+    
+    // Decode URI (%20 → space)
+    try {
+        str = decodeURIComponent(str);
+    } catch (e) {
+        // ignore
+    }
+
+    // ✅ Unicode + SLUG FULL
+    return (
+        str
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "") // Loại bỏ dấu Unicode
+            .replace(/đ/g, "d")
+            .replace(/Đ/g, "D")
+            .replace(/\s+/g, "_") // Thay toàn bộ dấu cách bằng "_"
             // .replace(/[^\w\-\.]/g, '');     // Loại các ký tự đặc biệt còn lại, trừ _ - .
             .toLowerCase()
     );
