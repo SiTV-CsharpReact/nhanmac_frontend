@@ -108,7 +108,6 @@ const Page: React.FC = () => {
   });
   const [loadingDetail, setLoadingDetail] = useState(false);
 
-  const baseUrl = window.location.origin;  
   // Reset form khi mở modal
   useEffect(() => {
     if (isSttModal?.openModal) {
@@ -258,7 +257,7 @@ const Page: React.FC = () => {
 
       title: "Trạng thái",
       dataIndex: "state",
-      width: 80,
+      width: 85,
       render: (text: string) => {
         return (
           <Tag color={getTagColor(statusXB, text)}>
@@ -269,28 +268,67 @@ const Page: React.FC = () => {
       },
     },
     {
-      title: "Ngày xuất bản",
+      title: "Ngày tạo",
       dataIndex: "created",
+      sorter: (a, b) =>
+        dayjs(a.publish_up).valueOf() - dayjs(b.publish_up).valueOf(),
       render: (text) => (
         <span className="font-semibold">
           {dayjs(text).format("DD/MM/YYYY")}
         </span>
       ),
-      width: 125
+      width: 80,
     },
+    {
+      title: "Ngày chỉnh sửa",
+      dataIndex: "modified",
+      sorter: (a, b) =>
+        dayjs(a.publish_up).valueOf() - dayjs(b.publish_up).valueOf(),
+      render: (text) => (
+        <span className="font-semibold">
+          {dayjs(text).format("DD/MM/YYYY")}
+        </span>
+      ),
+      width: 105,
+    },
+    {
+      title: "Ngày xuất bản",
+      dataIndex: "publish_up",
+      sorter: (a, b) =>
+        dayjs(a.publish_up).valueOf() - dayjs(b.publish_up).valueOf(),
+      render: (text) => (
+        <span className="font-semibold">
+          {dayjs(text).format("DD/MM/YYYY")}
+        </span>
+      ),
+      width: 102,
+    },
+    
+    // {
+    //   title: "Ngày cập nhật",
+    //   dataIndex: "created",
+    //   sorter: (a, b) =>
+    //     dayjs(a.created).valueOf() - dayjs(b.created).valueOf(),
+    //   render: (text) => (
+    //     <span className="font-semibold">
+    //       {dayjs(text).format("DD/MM/YYYY")}
+    //     </span>
+    //   ),
+    //   width: 100,
+    // },
     {
       title: "Tiêu đề",
       dataIndex: "title",
       key: "title",
-      width: 330, // đặt width cố định để ellipsis hoạt động tốt
+      width: 370, // đặt width cố định để ellipsis hoạt động tốt
       render: (text: string) => <EllipsisWithTooltip text={text} />,
     },
     {
       title: "Alias",
       dataIndex: "alias",
       key: "alias",
-      width: 250, // đặt width cố định để ellipsis hoạt động tốt
-      render: (text: string) => <EllipsisWithTooltip text={text} maxWidth={250}/>,
+      width: 230, // đặt width cố định để ellipsis hoạt động tốt
+      render: (text: string) => <EllipsisWithTooltip text={text} maxWidth={210}/>,
     },
     {
       title: "Link bài viết",
@@ -307,7 +345,7 @@ const Page: React.FC = () => {
         //   }
         //   maxWidth={280}
         // />
-        <a href={`${window.location.origin}/${record?.alias}-${record.id}.html`}  target="_blank" rel="noopener noreferrer">
+        <a href={`/${record?.alias}-${record.id}.html`} target="_blank" rel="noopener noreferrer">
              <Tooltip title="Xem bài viết">
   <LinkOutlined style={{ fontSize: 18, color: '#1890ff', cursor: 'pointer' }} />
 </Tooltip>
@@ -420,7 +458,7 @@ const Page: React.FC = () => {
             },
             showSizeChanger: true,
           }}
-          // scroll={{ x: 'max-content'  }} 
+          scroll={{ y: '480px'  }} 
           loading={loading}
           onChange={handleTableChange}
           rowKey="id"

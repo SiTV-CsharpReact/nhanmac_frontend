@@ -17,7 +17,7 @@ import {
   Spin,
 } from "antd";
 import type { UploadFile } from "antd/es/upload/interface";
-import { ReloadOutlined, UploadOutlined ,CloseOutlined} from "@ant-design/icons";
+import { ReloadOutlined, UploadOutlined, CloseOutlined } from "@ant-design/icons";
 import PublishInfoForm from "./PublishInfoForm";
 import { Post } from "@/types/contentItem";
 import { getBase64, removeVietnameseTones } from "../../../../../utils/util";
@@ -102,10 +102,10 @@ const ContentArticle: React.FC<typeContentArticle> = ({
       const formData = {
         ...values,
         picture: '',
-        alias:values?.alias?.replaceAll("_","-"),
+        alias: values?.alias?.replaceAll("_", "-"),
         introtext: introtext,
         created: dayjs().format("YYYY-MM-DD HH:mm:ss"),
-        title_alias: values?.title  ,
+        title_alias: values?.title,
         urls: urlFile?.pictureUrl,
         images: urlFile?.pictureName
       };
@@ -157,6 +157,8 @@ const ContentArticle: React.FC<typeContentArticle> = ({
         image_desc: data.image_desc,
         catid: data.catid,
         publish_up: data.publish_up ? dayjs(data.publish_up) : null,
+        created: data.created ? dayjs(data.created) : null,
+        modified: data.modified ? dayjs(data.modified) : null,
         metakey: data.metakey,
         metadesc: data.metadesc,
         sectionid: data.sectionid,
@@ -196,7 +198,7 @@ const ContentArticle: React.FC<typeContentArticle> = ({
     const handler = setTimeout(() => {
       const converted = removeVietnameseTones(title);
       // console.log(converted)
-      setAlias(converted.replaceAll("_","-"));
+      setAlias(converted.replaceAll("_", "-"));
       form.setFieldsValue({ alias: converted });
       setLoadingAlias(false);
     }, 500);
@@ -277,94 +279,93 @@ const ContentArticle: React.FC<typeContentArticle> = ({
               />
             </Form.Item>
 
-            <Form.Item name="picture" label="" colon={false} style={{ marginBottom: 0 }}>
-              <div className="space-y-3 ">
-                {/* 2 buttons */}
-                <div className="flex gap-2">
-                  <Button
-                    icon={<UploadOutlined />}
-                    onClick={() => setShowFileManagerCover(true)}
-                    disabled={!!coverImage}
-                    className="flex-1 bg-blue-50 hover:bg-blue-100 border-blue-200 h-11 w-16"
-                  // icon={<span className="text-lg">📁</span>}
-                  >
-                    Tải ảnh mới
-                  </Button>
-                  {/* <Upload {...uploadPropsLocal} className="flex-1">
-                    <Button
-                      icon={<UploadOutlined />}
-                      disabled={isUpload || !!coverImage}
-                      className="w-full h-11"
-                      loading={isUpload}
-                    >
-                      Tải ảnh mới
-                    </Button>
-                  </Upload> */}
-                </div>
-
-                {/* Preview ảnh */}
-                {coverImage && (
-                  <div className="relative bg-gray-50 p-2 rounded-lg border-2 border-dashed border-gray-200">
-                    <img
-                      src={coverImage.url}
-                      alt={coverImage.name}
-                      className="w-full h-40 object-cover rounded-md"
-                    />
-                    <div className="absolute top-2 right-2 flex gap-1 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full shadow-lg">
-                      <span className="text-xs text-gray-600 truncate max-w-32">{coverImage.name}</span>
-                      <button
-                        onClick={() => {
-                          setCoverImage(null);
-                          setUrlFile({});
-                        }}
-                        className="ml-1 text-red-500 hover:text-red-700 text-sm font-bold"
-                        title="Xóa ảnh"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
+            <Form.Item label="Alias" name="alias" rules={[{ required: true, message: "Nhập Alias!" }]}>
+              <Spin spinning={loadingAlias} size="small">
+                <Input placeholder="Alias" value={alias} readOnly />
+              </Spin>
             </Form.Item>
 
+
+
             {/* FileManager Modal */}
-            {showFileManagerCover && (
-              <FileManager
-                onSelect={(url, name) => {
-                  setCoverImage({ url, name });
-                  setUrlFile({ pictureName: name, pictureUrl: url });
-                  setShowFileManagerCover(false);
-                }}
-                onClose={() => setShowFileManagerCover(false)}
-              />
-            )}
 
-            {previewImage && (
-              <Image
-                wrapperStyle={{ display: "none" }}
-                preview={{
-                  visible: previewOpen,
-                  onVisibleChange: (visible) => setPreviewOpen(visible),
-                  afterOpenChange: (visible) => !visible && setPreviewImage(""),
-                }}
-                src={previewImage}
-              />
-            )}
 
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item label="Mô tả ảnh (không nhập sẽ auto lấy phần tiêu đề)" name="image_desc">
-                  <Input placeholder="Mô tả ảnh minh họa" />
+            <Row gutter={16} align="stretch">
+              {/* CỘT ẢNH */}
+              <Col span={10}>
+                <Form.Item name="picture" style={{ marginBottom: 0 }}>
+                  <div className="h-full">
+                    {!coverImage ? (
+                      <div
+                        onClick={() => setShowFileManagerCover(true)}
+                        className="cursor-pointer border-2 border-dashed border-gray-300 rounded-xl h-[140px] flex flex-col items-center justify-center hover:border-blue-400 hover:bg-blue-50 transition"
+                      >
+                        <div className="text-3xl mb-2">📁</div>
+                        <div className="font-medium text-gray-700">
+                          Tải ảnh đại diện
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="relative group h-[140px]">
+                        <img
+                          src={coverImage.url}
+                          alt={coverImage.name}
+                          className="w-full h-full object-cover rounded-xl border"
+                        />
+
+                        {/* Overlay */}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-3 rounded-xl">
+                          <Button size="small" onClick={() => setShowFileManagerCover(true)}>
+                            Thay ảnh
+                          </Button>
+                          <Button
+                            size="small"
+                            danger
+                            onClick={() => {
+                              setCoverImage(null);
+                              setUrlFile({});
+                            }}
+                          >
+                            Xóa
+                          </Button>
+                        </div>
+
+                        {/* Tên ảnh */}
+                        <div className="absolute bottom-2 left-2 right-2 bg-white/80 text-xs px-2 py-1 rounded truncate">
+                          {coverImage.name}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </Form.Item>
               </Col>
-              <Col span={12}>
-                <Form.Item label="Alias" name="alias">
-                  <Spin spinning={loadingAlias} size="small">
-                    <Input placeholder="alias" value={alias} readOnly />
-                  </Spin>
+
+              {/* CỘT MÔ TẢ */}
+              <Col span={14}>
+                <Form.Item
+                  label=""
+                  name="image_desc"
+                  style={{ height: "100%" }}
+                >
+                  <Input.TextArea
+                    placeholder="Nhập Mô tả ảnh đại diện (không nhập sẽ auto lấy phần tiêu đề)"
+                    className="h-full"
+                    style={{ height: "140px", resize: "none" }} // 224px ≈ h-56
+                  />
                 </Form.Item>
               </Col>
+
+              {/* File Manager */}
+              {showFileManagerCover && (
+                <FileManager
+                  onSelect={(url, name) => {
+                    setCoverImage({ url, name });
+                    setUrlFile({ pictureName: name, pictureUrl: url });
+                    setShowFileManagerCover(false);
+                  }}
+                  onClose={() => setShowFileManagerCover(false)}
+                />
+              )}
             </Row>
 
             {/* ✅ HIDDEN FIELD để Form nhận data */}
@@ -451,14 +452,14 @@ const ContentArticle: React.FC<typeContentArticle> = ({
                   Reset trắng bài viết
                 </Button>
                 <Button
-               danger
-               icon={<CloseOutlined />}
-                onClick ={()=>
-                  setTypeModal({
-                    typeModal: 4,
-                    openModal: false,
-                  })
-                }>
+                  danger
+                  icon={<CloseOutlined />}
+                  onClick={() =>
+                    setTypeModal({
+                      typeModal: 4,
+                      openModal: false,
+                    })
+                  }>
                   Đóng
                 </Button>
               </Space>

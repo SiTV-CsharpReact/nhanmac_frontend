@@ -192,7 +192,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <CategoryList categoryKey='nhan-kim-loai' bgWhite={true}/>
+        {/* <CategoryList categoryKey='nhan-kim-loai' bgWhite={true}/> */}
 
       </section>
 

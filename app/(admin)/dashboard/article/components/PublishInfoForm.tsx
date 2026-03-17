@@ -36,12 +36,30 @@ export default function PublishInfoForm({ form }: { form: any }) {
         }
         key="1"
       >
-        <Form.Item label="Ngày giờ xuất bản" name="publish_up">
+         <Form.Item label="Ngày giờ xuất bản" name="publish_up">
           <DatePicker
             showTime={{ format: 'HH:mm:ss' }}
             format="DD/MM/YYYY HH:mm:ss"
             style={{ width: "100%" }}
             placeholder="Chọn ngày giờ xuất bản"
+            defaultValue={dayjs()}
+          />
+        </Form.Item>
+        <Form.Item label="Ngày tạo" name="created">
+          <DatePicker
+            showTime={{ format: 'HH:mm:ss' }}
+            format="DD/MM/YYYY HH:mm:ss"
+            style={{ width: "100%" }}
+            placeholder="Chọn ngày gian tạo"
+            defaultValue={dayjs()}
+          />
+        </Form.Item>
+        <Form.Item label="Ngày chỉnh sửa" name="modified">
+          <DatePicker
+            showTime={{ format: 'HH:mm:ss' }}
+            format="DD/MM/YYYY HH:mm:ss"
+            style={{ width: "100%" }}
+            placeholder="Chọn ngày chỉnh sửa"
             defaultValue={dayjs()}
           />
         </Form.Item>

@@ -132,7 +132,7 @@ export const removeVietnameseTones = (str: string): string => {
             .replace(/[\u0300-\u036f]/g, "") // Loại bỏ dấu Unicode
             .replace(/đ/g, "d")
             .replace(/Đ/g, "D")
-            .replace(/\s+/g, "_") // Thay toàn bộ dấu cách bằng "_"
+            .replace(/\s+/g, "-") // Thay toàn bộ dấu cách bằng "_"
             // .replace(/[^\w\-\.]/g, '');     // Loại các ký tự đặc biệt còn lại, trừ _ - .
             .toLowerCase()
     );

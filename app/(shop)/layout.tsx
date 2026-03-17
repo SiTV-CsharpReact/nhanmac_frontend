@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "../globals.css";
 import Header from "@/components/share/Header";
 import RightMenu from "@/components/share/RightMenu";
@@ -8,6 +9,8 @@ import StyledComponentsRegistry from "@/lib/AntdRegistry";
 import { env } from "@/config/env";
 
 const SITE_URL = env.host;
+const GA_ID = "G-5S447EXT78";
+
 export const metadata: Metadata = {
   title: "Công ty Cổ phần Công Nghệ Thiên Lương",
   description: "Nhãn mác – tem nhãn – nameplate",
@@ -20,19 +23,39 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-   
-      <main >
-        <Header />
-        <RightMenu/>
-       {children}
-        <ScrollToTop />
-        <Footer/>
-        {/* {children} */}
-      </main>
-  
+    <html lang="vi">
+      <body>
+
+        {/* Google Analytics */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+          strategy="afterInteractive"
+        />
+
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_ID}');
+          `}
+        </Script>
+
+        <StyledComponentsRegistry>
+          <main>
+            <Header />
+            <RightMenu />
+            {children}
+            <ScrollToTop />
+            <Footer />
+          </main>
+        </StyledComponentsRegistry>
+
+      </body>
+    </html>
   );
 }

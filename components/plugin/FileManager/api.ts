@@ -1,4 +1,5 @@
-export const API_URL = 'http://localhost:3600/api/folders';
+import { env } from "../../../config/env";
+const API_URL = `${env?.apiUrl}/folders`;
 
 export interface BackendFile {
   name: string;
