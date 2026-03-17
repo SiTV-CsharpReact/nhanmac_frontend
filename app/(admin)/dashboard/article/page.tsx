@@ -303,19 +303,6 @@ const Page: React.FC = () => {
       ),
       width: 102,
     },
-    
-    // {
-    //   title: "Ngày cập nhật",
-    //   dataIndex: "created",
-    //   sorter: (a, b) =>
-    //     dayjs(a.created).valueOf() - dayjs(b.created).valueOf(),
-    //   render: (text) => (
-    //     <span className="font-semibold">
-    //       {dayjs(text).format("DD/MM/YYYY")}
-    //     </span>
-    //   ),
-    //   width: 100,
-    // },
     {
       title: "Tiêu đề",
       dataIndex: "title",

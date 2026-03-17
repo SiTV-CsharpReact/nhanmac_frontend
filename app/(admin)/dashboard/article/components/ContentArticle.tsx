@@ -104,7 +104,9 @@ const ContentArticle: React.FC<typeContentArticle> = ({
         picture: '',
         alias: values?.alias?.replaceAll("_", "-"),
         introtext: introtext,
-        created: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+        created: values?.created,
+        publish_up: values?.publish_up,
+        modified: values?.modified,
         title_alias: values?.title,
         urls: urlFile?.pictureUrl,
         images: urlFile?.pictureName
