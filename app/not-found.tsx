@@ -3,7 +3,6 @@ import { Button } from "antd";
 // import { redirect } from "next/navigation";
 import Header from "../components/share/Header";
 import Footer from "../components/share/Footer";
-import "./globals.css";
 import Link from "next/link";
 export const metadata = {
   title: "Nhanmac.vn | 404 - Không tìm thấy trang",

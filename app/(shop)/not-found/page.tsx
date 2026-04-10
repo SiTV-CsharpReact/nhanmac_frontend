@@ -14,7 +14,7 @@ export const metadata = {
 export default function NotFound() {
   return (
     <>
- 
+
       <div className="flex justify-center items-center px-4">
         <div className="container max-w-7xl w-full">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 p-6 md:p-12">
@@ -44,7 +44,7 @@ export default function NotFound() {
                   404
                 </span>
                 <span className="text-lg md:text-2xl text-[#4F4F4F] font-semibold">
-                  KHÔNG TÌM THẤY TRANG
+                  KHÔNG TÌM THẤY TRANG nè
                 </span>
               </div>
 
@@ -87,7 +87,7 @@ export default function NotFound() {
           </div>
         </div>
       </div>
-   
+
     </>
   );
 }

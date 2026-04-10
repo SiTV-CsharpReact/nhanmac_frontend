@@ -72,7 +72,7 @@ export default function RootLayout({
   return (
 
     <html lang="en">
-      <body className={robotoCondensed.className}>
+      <body className={`${robotoCondensed.variable} ${robotoCondensed.className}`}>
         {children}
       </body>
     </html>

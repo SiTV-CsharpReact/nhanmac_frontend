@@ -28,7 +28,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="vi">
-      <body>
+      <body className="font-root">
 
         {/* Google Analytics */}
         <Script

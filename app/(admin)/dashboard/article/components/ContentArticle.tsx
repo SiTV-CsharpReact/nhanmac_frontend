@@ -36,7 +36,7 @@ interface StatusModal {
 
 interface typeContentArticle {
   typeModal: number | undefined;
-  data: Post;
+  data?: any;
   reset?: boolean;
   setTypeModal: (modal: StatusModal) => void;
   setOnReload: () => void;
@@ -55,8 +55,6 @@ const ContentArticle: React.FC<typeContentArticle> = ({
   const [form] = Form.useForm();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewImage, setPreviewImage] = useState<string>("");
   const [isUpload, setIsUpload] = useState(false);
   const [urlFile, setUrlFile] = useState<any>({});
   const [typeSub, setTypeSub] = useState(0);
@@ -64,41 +62,38 @@ const ContentArticle: React.FC<typeContentArticle> = ({
   const [title, setTitle] = useState("");
   const [loadingAlias, setLoadingAlias] = useState(false);
   const [showFileManagerCover, setShowFileManagerCover] = useState(false);
-  const [coverImage, setCoverImage] = useState(null); // {url, name}
+  const [coverImage, setCoverImage] = useState<{ url: string; name: string } | null>(null); // {url, name}
+  const [editorKey, setEditorKey] = useState(Date.now());
 
 
   // Reset form khi modal mở
   useEffect(() => {
-    if (reset) {
-      form.resetFields();
-      setEditorData("");
-      setContent("");
-      setIntrotext(""); // ✅ Reset introtext
-      setImageUrl(null);
-      setFileList([]);
-      setIsUpload(false);
-      setUrlFile({});
+    if (reset || typeModal === 1) {
+      if (reset) {
+        form.resetFields();
+        setEditorData("");
+        setContent("");
+        setIntrotext(""); // ✅ Reset introtext
+        setImageUrl(null);
+        setFileList([]);
+        setIsUpload(false);
+        setUrlFile({});
+        setCoverImage(null);
+        setAlias("");
+        setTitle("");
+        setEditorKey(Date.now());
+      }
     }
-  }, [reset, form]);
+  }, [reset, form, typeModal]);
 
   const reloadPage = () => {
-    // setTypeModal({
-    //   typeModal: 4,
-    //   openModal: false,
-    // });
-    // form.resetFields();
-    // setEditorData("");
-    // setIntrotext("");
-    // setImageUrl(null);
-    // setFileList([]);
-    // setUrlFile({});
     setOnReload();
   };
 
   // ✅ FIXED: onFinish dùng introtext state
   const onFinish = async (values: any) => {
     try {
-      console.log(values)
+      // console.log(values)
       const formData = {
         ...values,
         picture: '',
@@ -161,14 +156,15 @@ const ContentArticle: React.FC<typeContentArticle> = ({
   };
   // Load data từ props
   useEffect(() => {
-    if (data) {
+
+    if (data && typeModal !== 1) {
       form.setFieldsValue({
         title: data.title,
         image_desc: data.image_desc,
         catid: data.catid,
         publish_up: data.publish_up ? dayjs(data.publish_up) : null,
         created: data.created ? dayjs(data.created) : null,
-        modified: data.modified ? dayjs(data.modified) : null,
+        modified: dayjs(),
         metakey: data.metakey,
         metadesc: data.metadesc,
         sectionid: data.sectionid,
@@ -191,6 +187,10 @@ const ContentArticle: React.FC<typeContentArticle> = ({
         setUrlFile({
           pictureName: data?.images,
           pictureUrl: data?.urls,
+        });
+        setCoverImage({
+          url: data?.urls,
+          name: data?.images,
         });
       }
     }
@@ -301,21 +301,21 @@ const ContentArticle: React.FC<typeContentArticle> = ({
 
             <Row gutter={16} align="stretch">
               {/* CỘT ẢNH */}
-              <Col span={10}>
+              <Col span={5}>
                 <Form.Item name="picture" style={{ marginBottom: 0 }}>
                   <div className="h-full">
                     {!coverImage ? (
                       <div
                         onClick={() => setShowFileManagerCover(true)}
-                        className="cursor-pointer border-2 border-dashed border-gray-300 rounded-xl h-[140px] flex flex-col items-center justify-center hover:border-blue-400 hover:bg-blue-50 transition"
+                        className="cursor-pointer border-2 border-dashed border-gray-300 rounded-xl h-[70px] flex flex-col items-center justify-center hover:border-blue-400 hover:bg-blue-50 transition"
                       >
-                        <div className="text-3xl mb-2">📁</div>
+                        <div className="text-2xl mb-2">📁</div>
                         <div className="font-medium text-gray-700">
                           Tải ảnh đại diện
                         </div>
                       </div>
                     ) : (
-                      <div className="relative group h-[140px]">
+                      <div className="relative group h-[70px]">
                         <img
                           src={coverImage.url}
                           alt={coverImage.name}
@@ -350,7 +350,7 @@ const ContentArticle: React.FC<typeContentArticle> = ({
               </Col>
 
               {/* CỘT MÔ TẢ */}
-              <Col span={14}>
+              <Col span={19}>
                 <Form.Item
                   label=""
                   name="image_desc"
@@ -359,7 +359,7 @@ const ContentArticle: React.FC<typeContentArticle> = ({
                   <Input.TextArea
                     placeholder="Nhập Mô tả ảnh đại diện (không nhập sẽ auto lấy phần tiêu đề)"
                     className="h-full"
-                    style={{ height: "140px", resize: "none" }} // 224px ≈ h-56
+                    style={{ height: "70px", resize: "none" }} // 224px ≈ h-56
                   />
                 </Form.Item>
               </Col>
@@ -388,6 +388,7 @@ const ContentArticle: React.FC<typeContentArticle> = ({
                 Nội dung bài viết <span className="text-red-500">*</span>
               </label>
               <TextEditor
+                key={editorKey}
                 content={content}
                 // editorData={editorData}
                 setEditorData={(value) => {
@@ -398,25 +399,6 @@ const ContentArticle: React.FC<typeContentArticle> = ({
                 toolbar="full"
               />
             </div>
-
-            {/* <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                onClick={() => setTypeSub(1)}
-                loading={isUpload}
-              >
-                {typeModal === 1 ? "Xuất bản" : "Cập nhật bài viết"}
-              </Button>
-              <Button
-                type="default"
-                htmlType="submit"
-                className="!ml-3"
-                onClick={() => setTypeSub(0)}
-              >
-                Chưa xuất bản
-              </Button>
-            </Form.Item> */}
             <div
               style={{
                 position: "sticky",
@@ -455,6 +437,8 @@ const ContentArticle: React.FC<typeContentArticle> = ({
                     setUrlFile({});
                     setFileList([]);
                     setAlias("");
+                    setTitle("");
+                    setEditorKey(Date.now());
                     message.success("Đã reset lại bài viết");
                   }}
                 >

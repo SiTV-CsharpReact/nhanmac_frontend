@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Table, Button, Tag, Tooltip, Form, Modal, notification, Space, Popconfirm,Typography } from "antd";
+import { Table, Button, Tag, Tooltip, Form, Modal, notification, Space, Popconfirm, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { dateFormat, statusXB } from "../../../../config/config";
 import { formatMoney, getConstantLabel, getTagColor, renderSlugUrl } from "../../../../utils/util";
@@ -78,7 +78,7 @@ const EllipsisWithTooltip: React.FC<EllipsisWithTooltipProps> = ({
 
 const processContent = (html: string): string => {
   if (!html) return '';
-  
+
   return html
     .replace(/href="(?:index\.php\/)?[^"]*\/(\d+)-([a-zA-Z0-9\-]+)(?:\.html)?"/g, `href="$2-$1.html"`)
     .replace(/src="upload\/image\/([^"]+)"/g, `src="${renderSlugUrl('$1')}"`)
@@ -112,7 +112,7 @@ const Page: React.FC = () => {
   useEffect(() => {
     if (isSttModal?.openModal) {
       setResetForm(true);
-      setTimeout(() => setResetForm(false), 100);
+      setTimeout(() => setResetForm(false), 150);
     }
   }, [isSttModal?.openModal]);
 
@@ -120,8 +120,8 @@ const Page: React.FC = () => {
   const fetchData = async (page = 1, pageSize = 10) => {
     setLoading(true);
     const values = await form.validateFields();
-    const {state, sectionid, keyword } = values;
-  
+    const { state, sectionid, keyword } = values;
+
     try {
       const response = await fetchContent({
         startTime: "01/01/2000",
@@ -132,10 +132,10 @@ const Page: React.FC = () => {
         sectionid,
         keyword,
       });
-  
+
       if (response.Code === 200 && response.Data) {
         const rawData = Array.isArray(response.Data.list) ? response.Data.list : [];
-  
+
         setData(
           rawData.map((item) => ({ ...item, key: item.id }))
         );
@@ -153,41 +153,22 @@ const Page: React.FC = () => {
       console.error("Error fetching data:", error);
       setData([]);
     }
-  
+
     setLoading(false);
   };
-  
+
 
   // Hàm lấy chi tiết bài viết
   const fetchDetail = async (id: number) => {
     try {
       setLoadingDetail(true);
       const result = await fetchContentId(id);
-  
+
       if (result.Code === 200 && result.Data?.id) {  // ✅ Check id tồn tại
         console.log(result.Data.introtext.replace(
           /href="(?:index\.php\/)?[^"]*\/(\d+)-([a-zA-Z0-9\-]+)(?:\.html)?"/g,
           (match, id, slug) => `href="${slug}-${id}.html"`
         )
-        .replace(
-          /src="upload\/image\/([^"]+)"/g,
-          (match, filename) => {
-            return `src="${renderSlugUrl(filename)}"`
-          }
-        ).replace(
-          /(<img[^>]*?)\swidth="[^"]*"/g,
-          (match, startTag) => `${startTag} width="100%"`
-        )
-        .replace(
-          /<img((?![^>]*width=)[^>]*)>/g,
-          (match, inside) => `<img${inside} width="100%">`
-        ),'zo')
-        setDataDetail({
-          ...result.Data,
-          introtext: result.Data.introtext?.replace(
-            /href="(?:index\.php\/)?[^"]*\/(\d+)-([a-zA-Z0-9\-]+)(?:\.html)?"/g,
-            (match, id, slug) => `href="${slug}-${id}.html"`
-          )
           .replace(
             /src="upload\/image\/([^"]+)"/g,
             (match, filename) => {
@@ -200,10 +181,29 @@ const Page: React.FC = () => {
           .replace(
             /<img((?![^>]*width=)[^>]*)>/g,
             (match, inside) => `<img${inside} width="100%">`
-          ) || '' // ✅ Fallback rỗng
-          
+          ), 'zo')
+        setDataDetail({
+          ...result.Data,
+          introtext: result.Data.introtext?.replace(
+            /href="(?:index\.php\/)?[^"]*\/(\d+)-([a-zA-Z0-9\-]+)(?:\.html)?"/g,
+            (match, id, slug) => `href="${slug}-${id}.html"`
+          )
+            .replace(
+              /src="upload\/image\/([^"]+)"/g,
+              (match, filename) => {
+                return `src="${renderSlugUrl(filename)}"`
+              }
+            ).replace(
+              /(<img[^>]*?)\swidth="[^"]*"/g,
+              (match, startTag) => `${startTag} width="100%"`
+            )
+            .replace(
+              /<img((?![^>]*width=)[^>]*)>/g,
+              (match, inside) => `<img${inside} width="100%">`
+            ) || '' // ✅ Fallback rỗng
+
         });
-      
+
       }
     } catch (error) {
       console.error("Error fetching detail:", error);
@@ -212,7 +212,7 @@ const Page: React.FC = () => {
     }
   };
 
-  
+
 
   // Hàm xóa bài viết
   const handleDeleteContent = async (id: number) => {
@@ -223,7 +223,7 @@ const Page: React.FC = () => {
           message: "Thành công",
           description: "Đã xóa bài viết thành công!",
         });
-      
+
       }
       setOnReload(true); // Refresh lại danh sách sau khi xóa
     } catch (error) {
@@ -250,7 +250,7 @@ const Page: React.FC = () => {
     {
       title: "#",
       dataIndex: "id",
-      align:'center',
+      align: 'center',
       width: 50
     },
     {
@@ -315,28 +315,19 @@ const Page: React.FC = () => {
       dataIndex: "alias",
       key: "alias",
       width: 230, // đặt width cố định để ellipsis hoạt động tốt
-      render: (text: string) => <EllipsisWithTooltip text={text} maxWidth={210}/>,
+      render: (text: string) => <EllipsisWithTooltip text={text} maxWidth={210} />,
     },
     {
       title: "Link bài viết",
       // key: "alias",
-      width:100, // đặt width cố định để ellipsis hoạt động tốt
-      align:'center',
+      width: 100, // đặt width cố định để ellipsis hoạt động tốt
+      align: 'center',
       render: (text, record) => (
-        // console.log(`${record.alias}-${record.id}.html`),
-        // <EllipsisWithTooltip
-        //   text={
-        //     <a href={`${window.location.origin}/${record?.alias}-${record.id}.html`}  target="_blank" rel="noopener noreferrer">
-        //       {`${record.alias}-${record.id}.html`}
-        //     </a>
-        //   }
-        //   maxWidth={280}
-        // />
         <a href={`/${record?.alias}-${record.id}.html`} target="_blank" rel="noopener noreferrer">
-             <Tooltip title="Xem bài viết">
-  <LinkOutlined style={{ fontSize: 18, color: '#1890ff', cursor: 'pointer' }} />
-</Tooltip>
-            </a>
+          <Tooltip title="Xem bài viết">
+            <LinkOutlined style={{ fontSize: 18, color: '#1890ff', cursor: 'pointer' }} />
+          </Tooltip>
+        </a>
       ),
     },
     {
@@ -358,37 +349,37 @@ const Page: React.FC = () => {
             />
           </Tooltip>
           <div
-          className="pt-1.5"
-          onClick={() =>
-            setIsSttModal({
-              idContent: record?.id,
-              typeModal: 2,
-              openModal: true,
-            })
-          }>
+            className="pt-1.5"
+            onClick={() =>
+              setIsSttModal({
+                idContent: record?.id,
+                typeModal: 2,
+                openModal: true,
+              })
+            }>
             <EditIcon
             />
           </div>
           <Tooltip title="Xóa">
-        <Popconfirm
-            title={`Bạn có chắc muốn xóa "${record.title}"?`}
-            onConfirm={() => {
-              handleDeleteContent(record.id);
-            }}
+            <Popconfirm
+              title={`Bạn có chắc muốn xóa "${record.title}"?`}
+              onConfirm={() => {
+                handleDeleteContent(record.id);
+              }}
 
-            okText="Xóa"
-            cancelText="Hủy"
-          >
-            <Button
-            className="!pt-1"
-              type="text"
-              icon={<DeleteIcon className="text-red-500" />}
-              title="Xóa menu"
-              onClick={(e) => e.stopPropagation()} // Ngăn sự kiện lan ra ngoài khi bấm nút
-            />
-          </Popconfirm>
+              okText="Xóa"
+              cancelText="Hủy"
+            >
+              <Button
+                className="!pt-1"
+                type="text"
+                icon={<DeleteIcon className="text-red-500" />}
+                title="Xóa menu"
+                onClick={(e) => e.stopPropagation()} // Ngăn sự kiện lan ra ngoài khi bấm nút
+              />
+            </Popconfirm>
           </Tooltip>
-     
+
         </div>
       ),
     },
@@ -397,10 +388,10 @@ const Page: React.FC = () => {
   const handleTableChange = (pagination: TablePaginationConfig) => {
     const current = pagination.current || 1;
     const pageSize = pagination.pageSize || 10;
-  
+
     setTableParams({ pagination });        // cập nhật local
     setPagination({ current, pageSize, total: pagination.total || 0 }); // cập nhật pagination nếu cần
-  
+
     fetchData(current, pageSize);          // ✅ gọi API lại với pageSize mới
   };
 
@@ -428,7 +419,11 @@ const Page: React.FC = () => {
             {/* <div>Tổng bài viết chưa duyệt: </div> */}
           </div>
           <div className="pb-2">
-            <Button icon={<PlusCircleOutlined />} onClick={() => setIsSttModal({ typeModal: 1, openModal: true })}>
+            <Button icon={<PlusCircleOutlined />} onClick={() => {
+              setIsSttModal({ typeModal: 1, openModal: true });
+              setResetForm(true);
+              setDataDetail(undefined);
+            }}>
               Tạo mới
             </Button>
 
@@ -445,7 +440,7 @@ const Page: React.FC = () => {
             },
             showSizeChanger: true,
           }}
-          scroll={{ y: '480px'  }} 
+          scroll={{ y: '480px' }}
           loading={loading}
           onChange={handleTableChange}
           rowKey="id"
@@ -456,7 +451,10 @@ const Page: React.FC = () => {
           header={`${isSttModal?.typeModal == 0 ? `Chi tiết` : isSttModal?.typeModal == 1 ? `Thêm mới` : `Chỉnh sửa`
             } bài viết`}
           spinning={loadingDetail}
-          onCancel={() => setIsSttModal({ typeModal: 0, openModal: false })} // Xử lý đóng modal
+          onCancel={() => {
+            setIsSttModal({ typeModal: 0, openModal: false });
+            setDataDetail(undefined);
+          }} // Xử lý đóng modal
           open={isSttModal?.openModal}
           width={1200}
           children={
@@ -466,19 +464,19 @@ const Page: React.FC = () => {
                   /href="(?:index\.php\/)?[^"]*\/(\d+)-([a-zA-Z0-9\-]+)(?:\.html)?"/g,
                   (match, id, slug) => `href="${slug}-${id}.html"`
                 )
-                .replace(
-                  /src="upload\/image\/([^"]+)"/g,
-                  (match, filename) => {
-                    return `src="${renderSlugUrl(filename)}"`
-                  }
-                ).replace(
-                  /(<img[^>]*?)\swidth="[^"]*"/g,
-                  (match, startTag) => `${startTag} width="100%"`
-                )
-                .replace(
-                  /<img((?![^>]*width=)[^>]*)>/g,
-                  (match, inside) => `<img${inside} width="100%">`
-                )
+                  .replace(
+                    /src="upload\/image\/([^"]+)"/g,
+                    (match, filename) => {
+                      return `src="${renderSlugUrl(filename)}"`
+                    }
+                  ).replace(
+                    /(<img[^>]*?)\swidth="[^"]*"/g,
+                    (match, startTag) => `${startTag} width="100%"`
+                  )
+                  .replace(
+                    /<img((?![^>]*width=)[^>]*)>/g,
+                    (match, inside) => `<img${inside} width="100%">`
+                  )
                 } />
               ) : (
                 <ContentArticle

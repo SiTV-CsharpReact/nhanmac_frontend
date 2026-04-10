@@ -49,8 +49,8 @@ export default function MenuClient({ menus }: { menus: MenuItem[] }) {
   const [openMobileIds, setOpenMobileIds] = useState<number[]>([]);
   const [openDesktopId, setOpenDesktopId] = useState<number | null>(null);
   const isTouch =
-  typeof window !== "undefined" &&
-  window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+    typeof window !== "undefined" &&
+    window.matchMedia("(hover: none) and (pointer: coarse)").matches;
   const toggleMobile = (id: number) => {
     setOpenMobileIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
@@ -144,8 +144,8 @@ export default function MenuClient({ menus }: { menus: MenuItem[] }) {
                                       href={buildUrl(sub.link)}
                                       onClick={closeMobile}
                                       className={`text-sm ${subActive
-                                          ? "text-[#589fff]"
-                                          : "text-[#1f2b46]"
+                                        ? "text-[#589fff]"
+                                        : "text-[#1f2b46]"
                                         }`}
                                     >
                                       {sub.name}
@@ -169,19 +169,21 @@ export default function MenuClient({ menus }: { menus: MenuItem[] }) {
         <div className="hidden md:block">
           <div className="container mx-auto flex items-center py-2 pl-2">
             <Link href="/" className="mr-6 pr-[5%]">
-              <Image
-                src="/images/logo.png"
-                width={56}
-                height={20}
-                alt="Logo"
-                priority
-              />
+              <div className="min-h-[40px] min-w-[60px] flex items-center">
+                <Image
+                  src="/images/logo.png"
+                  width={56}
+                  height={20}
+                  alt="Logo"
+                  priority
+                />
+              </div>
             </Link>
 
             <nav className="flex-grow relative">
               <div ref={containerRef} className="max-w-full">
-                <ul className="flex gap-6 whitespace-nowrap">
-                  {visible.map((item) => {
+                <ul className="flex flex-wrap gap-x-6 gap-y-2">
+                  {menus.map((item) => {
                     const active =
                       isActive(item.link, pathname) ||
                       hasActiveChild(item, pathname);
@@ -192,7 +194,7 @@ export default function MenuClient({ menus }: { menus: MenuItem[] }) {
                       <li key={item.id} className="relative group">
                         <Link
                           href={buildUrl(item.link)}
-                       
+
                           className={`uppercase font-bold text-sm flex items-center gap-1
                             ${active
                               ? "text-[#589fff]"
@@ -202,18 +204,17 @@ export default function MenuClient({ menus }: { menus: MenuItem[] }) {
                           {item.name}
                           {item.children?.length > 0 && (
                             <CaretDownOutlined
-                            onClick={(e) => {
-                              if (!isTouch) return; // desktop bỏ qua
-                              e.stopPropagation();
-                              e.preventDefault();
-                              setOpenDesktopId(
-                                isOpen ? null : item.id
-                              );
-                            }}
-                            className={`cursor-pointer transition ${
-                              isOpen ? "rotate-180" : ""
-                            }`}
-                          />
+                              onClick={(e) => {
+                                if (!isTouch) return; // desktop bỏ qua
+                                e.stopPropagation();
+                                e.preventDefault();
+                                setOpenDesktopId(
+                                  isOpen ? null : item.id
+                                );
+                              }}
+                              className={`cursor-pointer transition ${isOpen ? "rotate-180" : ""
+                                }`}
+                            />
                           )}
                         </Link>
 
@@ -246,8 +247,8 @@ export default function MenuClient({ menus }: { menus: MenuItem[] }) {
                                       }, 200); // 500ms = 0.5s
                                     }}
                                     className={`block px-4 py-2 ${subActive
-                                        ? "bg-[#589fff] text-white"
-                                        : "hover:bg-[#589fff] hover:text-white"
+                                      ? "bg-[#589fff] text-white"
+                                      : "hover:bg-[#589fff] hover:text-white"
                                       }`}
                                   >
                                     {sub.name}
@@ -261,7 +262,7 @@ export default function MenuClient({ menus }: { menus: MenuItem[] }) {
                     );
                   })}
 
-                  {overflow.length > 0 && (
+                  {/* {overflow.length > 0 && (
                     <li className="relative group shrink-0">
                       <div
                         className="uppercase font-bold text-sm cursor-pointer"
@@ -295,8 +296,8 @@ export default function MenuClient({ menus }: { menus: MenuItem[] }) {
                                   setTimeout(() => setOpenOverflow(false), 500);
                                 }}
                                 className={`block px-4 py-2 ${active
-                                    ? "bg-[#589fff] text-white"
-                                    : "hover:bg-[#589fff] hover:text-white"
+                                  ? "bg-[#589fff] text-white"
+                                  : "hover:bg-[#589fff] hover:text-white"
                                   }`}
                               >
                                 {item.name}
@@ -306,7 +307,7 @@ export default function MenuClient({ menus }: { menus: MenuItem[] }) {
                         })}
                       </ul>
                     </li>
-                  )}
+                  )} */}
 
                 </ul>
 

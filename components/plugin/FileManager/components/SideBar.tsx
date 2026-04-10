@@ -233,7 +233,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <>
       <aside className="w-72 flex flex-col border-r border-[#f2f2f2] bg-white shrink-0 overflow-hidden">
-        <div className="flex-1 p-4">
+        <div className="flex-1 p-4 overflow-y-auto">
           <p className="px-3 text-[11px] font-bold text-[#757575] uppercase tracking-wider pb-4">Thư Mục</p>
 
           <div className="flex flex-col gap-0.5">
