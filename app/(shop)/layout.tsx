@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import "../globals.css";
+import { robotoCondensed } from "../fonts";
 import Header from "@/components/share/Header";
 import RightMenu from "@/components/share/RightMenu";
 import Footer from "@/components/share/Footer";
@@ -27,8 +28,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="vi">
-      <body className="font-root">
+    <html lang="vi" className={robotoCondensed.variable}>
+      <body className={`${robotoCondensed.className} font-root`}>
 
         {/* Google Analytics */}
         <Script

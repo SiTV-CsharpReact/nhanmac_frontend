@@ -5,6 +5,7 @@ import ScrollToTop from "../../components/share/ScrollToTop";
 import HeaderAdmin from "../../components/share/HeaderAdmin";
 import Navbar from "../../components/share/Navbar";
 import StyledComponentsRegistry from "../../lib/AntdRegistry";
+import { robotoCondensed } from "../fonts";
 
 export const metadata: Metadata = {
   title: "Trang quản trị Admin",
@@ -17,13 +18,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={robotoCondensed.variable}>
       <head>
         <link rel="icon" href="/logo.svg" type="image/png" sizes="32x32" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta charSet="UTF-8" />
       </head>
-      <body>
+      <body className={robotoCondensed.className}>
         <div className="bg-[#d7d7d780] h-full container-admin">
           <HeaderAdmin />
 

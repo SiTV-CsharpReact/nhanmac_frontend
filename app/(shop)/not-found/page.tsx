@@ -5,6 +5,7 @@ import Header from "@/components/share/Header";
 import Footer from "@/components/share/Footer";
 // import "./globals.css";
 import Link from "next/link";
+import { robotoCondensed } from "../../fonts";
 export const metadata = {
   title: "Nhanmac.vn | 404 - Không tìm thấy trang",
   description:
@@ -13,8 +14,7 @@ export const metadata = {
 };
 export default function NotFound() {
   return (
-    <>
-
+    <div className={`${robotoCondensed.variable} ${robotoCondensed.className} font-root`}>
       <div className="flex justify-center items-center px-4">
         <div className="container max-w-7xl w-full">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 p-6 md:p-12">
@@ -87,7 +87,6 @@ export default function NotFound() {
           </div>
         </div>
       </div>
-
-    </>
+    </div>
   );
 }

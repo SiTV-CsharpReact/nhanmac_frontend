@@ -4,6 +4,7 @@ import { Button } from "antd";
 import Header from "../components/share/Header";
 import Footer from "../components/share/Footer";
 import Link from "next/link";
+import { robotoCondensed } from "./fonts";
 export const metadata = {
   title: "Nhanmac.vn | 404 - Không tìm thấy trang",
   description:
@@ -12,7 +13,7 @@ export const metadata = {
 };
 export default function NotFound() {
   return (
-    <>
+    <div className={`${robotoCondensed.variable} ${robotoCondensed.className} font-root`}>
       <Header />
       <div className="flex justify-center items-center px-4">
         <div className="container max-w-7xl w-full">
@@ -87,6 +88,6 @@ export default function NotFound() {
         </div>
       </div>
       <Footer />
-    </>
+    </div>
   );
 }
