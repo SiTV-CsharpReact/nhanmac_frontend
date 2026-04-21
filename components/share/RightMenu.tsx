@@ -1,5 +1,6 @@
 // components/RightMenu.js
 import Image from "next/image";
+import ScrollToTop from "./ScrollToTop";
 
 const RightMenu = () => {
   return (
@@ -59,6 +60,7 @@ const RightMenu = () => {
         //   className="w-6 h-6"
         />
       </a>
+      <ScrollToTop />
     </div>
   );
 };

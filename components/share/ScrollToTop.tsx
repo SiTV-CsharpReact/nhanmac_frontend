@@ -32,8 +32,8 @@ const ScrollToTop = () => {
     };
   }, []);
 
-  // Điều chỉnh radius cho phù hợp với kích thước mới
-  const radius = 15;
+  // Điều chỉnh radius cho phù hợp với kích thước w-12 (48px)
+  const radius = 22;
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (scrollProgress / 100) * circumference;
 
@@ -42,17 +42,17 @@ const ScrollToTop = () => {
       {isVisible && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-8 right-3 md:right-7 z-50 w-9 h-9 flex items-center justify-center group cursor-pointer"
+          className="relative w-12 h-12 flex items-center justify-center group cursor-pointer"
           aria-label="Cuộn lên đầu trang"
         >
           {/* Background Circle */}
           <div className="absolute inset-0 bg-[#2F80ED] rounded-full opacity-80"></div>
 
           {/* Progress Circle */}
-          <svg className="absolute w-9 h-9 -rotate-90">
+          <svg className="absolute w-12 h-12 -rotate-90">
             <circle
-              cx="18"
-              cy="18"
+              cx="24"
+              cy="24"
               r={radius}
               stroke="white"
               strokeWidth="2"
@@ -66,7 +66,7 @@ const ScrollToTop = () => {
           {/* Arrow Icon */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-4 w-4 text-white z-10 transition-transform duration-300 group-hover:-translate-y-1"
+            className="h-5 w-5 text-white z-10 transition-transform duration-300 group-hover:-translate-y-1 relative"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"

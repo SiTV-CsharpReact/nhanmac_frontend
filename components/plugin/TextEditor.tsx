@@ -65,7 +65,7 @@ const TextEditor = ({  setEditorData, disabled = false, toolbar = 'full', conten
             "preview", "searchreplace",
             "table", "visualblocks"
           ],
-      
+          image_title: true,
           toolbar:
             "undo redo | anchor link image | blocks fontfamily fontsize| bold italic underline forecolor backcolor | " +
             "alignleft aligncenter alignright alignjustify | " +
@@ -74,7 +74,6 @@ const TextEditor = ({  setEditorData, disabled = false, toolbar = 'full', conten
       
           contextmenu: "link image anchor",
       
-          /* 🔥 QUAN TRỌNG NHẤT */
           valid_elements: "*[*]",
           extended_valid_elements:
             "a[href|target|title|class|style|id]," +

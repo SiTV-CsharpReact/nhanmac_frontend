@@ -34,7 +34,7 @@ export default function ChangePasswordModal({ visible, onClose, onChangePassword
         oldPassword: values.oldPassword,
         newPassword: values.newPassword,
       });
-      message.success('Đổi mật khẩu thành công!');
+      // message.success('Đổi mật khẩu thành công!');
       form.resetFields();
       onClose();
     } catch (error) {

@@ -56,7 +56,7 @@ async function getPageData(
     const { id, alias } = postResult;
 
     const { data } = await fetchContentBySlugId(alias, id);
-    if (!data || data.Code === 404) return null;
+    if (!data || data.Code === 404 || data?.Data?.state === 0) return null;
 
     const post = data.Data;
 
